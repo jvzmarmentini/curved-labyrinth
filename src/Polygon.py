@@ -5,7 +5,6 @@ from multipledispatch import dispatch
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from src.BoundingBox import BoundingBox
 
 from src.Point import *
 
