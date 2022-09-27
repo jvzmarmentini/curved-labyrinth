@@ -17,8 +17,8 @@ class Point:
         return Point(x, y)
 
     def __sub__(self, other: Self) -> Self:
-        x = self.x - other.x
-        y = self.y - other.y
+        x = abs(self.x) - abs(other.x)
+        y = abs(self.y) - abs(other.y)
         return Point(x, y)
 
     def __mul__(self, other: float) -> Self:

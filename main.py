@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import os
+from select import POLLHUP
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -8,22 +9,44 @@ from OpenGL.GLUT import *
 
 from src.Drawer import *
 from src.Polygon import *
+from src.Curve import Curve
 
-flagDrawAxis = True
+flagDrawAxis = False
 scene = None
+curves = None
 
+
+def readCurvesFromFile() -> None:
+    global curves
+    
+    points = []
+    with open("./assets/basePoints.txt") as f:
+        for line in f:
+            coord = list(map(float, line.split()))
+            x = coord[0]
+            y = coord[1]
+            points.append(Point(x, y))
+
+    curves = []
+    with open("./assets/curves.txt") as f:
+        for line in f:
+            vertices = [points[i] for i in map(int, line.split())]
+            curve = Curve(*vertices)
+            curves.append(curve)
 
 def init() -> None:
     global scene
 
-    maxPoint = Point(100, 100, 0)
-    scene = Polygon(Point(), maxPoint)
+    minPoint = Point(-5, -5, 0)
+    maxPoint = Point(5, 5, 0)
+    scene = Polygon(minPoint, maxPoint)
+    readCurvesFromFile()
 
 
 def reshape(w, h):
     minPoint, maxPoint = scene.getLimits()
 
-    glViewport(0, 0, w, h)
+    glViewport(minPoint.x, minPoint.y, w, h)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glOrtho(minPoint.x, maxPoint.x,
@@ -38,6 +61,9 @@ def display() -> None:
 
     if (flagDrawAxis):
         Drawer.drawAxis(scene)
+        
+    for curve in curves:
+        Drawer.drawCurve(curve)
 
     glutSwapBuffers()
     # glutPostRedisplay()
