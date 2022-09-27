@@ -11,14 +11,14 @@ from src.Drawer import *
 from src.Polygon import *
 from src.Curve import Curve
 
-flagDrawAxis = False
+flagDrawAxis = True
 scene = None
 curves = None
 
 
 def readCurvesFromFile() -> None:
     global curves
-    
+
     points = []
     with open("./assets/basePoints.txt") as f:
         for line in f:
@@ -28,11 +28,24 @@ def readCurvesFromFile() -> None:
             points.append(Point(x, y))
 
     curves = []
+    refs = []
     with open("./assets/curves.txt") as f:
         for line in f:
             vertices = [points[i] for i in map(int, line.split())]
             curve = Curve(*vertices)
             curves.append(curve)
+            refs.append(line.split())
+            del refs[-1][1]
+
+    for ref, curve in zip(refs, curves):
+        for ref2, curve2 in zip(refs, curves):
+            if curve == curve2:
+                continue
+            if ref[0] == ref2[0] or ref[0] == ref2[1]:
+                curve.lowerNeighbours.add(curve2)
+            if ref[1] == ref2[0] or ref[1] == ref2[1]:
+                curve.upperNeighbours.add(curve2)
+
 
 def init() -> None:
     global scene
@@ -63,7 +76,7 @@ def display() -> None:
         Drawer.drawAxis(scene)
         
     for curve in curves:
-        Drawer.drawCurve(curve)
+        curve.generate()
 
     glutSwapBuffers()
     # glutPostRedisplay()

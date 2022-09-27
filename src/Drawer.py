@@ -2,7 +2,6 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from src.Curve import Curve
 from src.Point import *
 from src.Polygon import Polygon
 
@@ -22,20 +21,22 @@ class Drawer():
         glEnd()
 
     @staticmethod
-    def displayTitle(string: str, x: float, y: float):
-        glColor3f(1, 1, 1)
+    def displayText(string: str, x: float, y: float, *color):
+        if color is not None:
+            glColor3f(*color)
         glRasterPos2f(x, y)
         for c in string:
             glutBitmapCharacter(GLUT_BITMAP_8_BY_13, ord(c))
 
     @staticmethod
-    def drawCurve(curve: Curve):
-        for prev, cur, t in curve.getEdges():
-            glLineWidth(4)
-            glColor3f(cur.x, cur.y, max(t, .5))
-            glBegin(GL_LINES)
-            glVertex2f(prev.x, prev.y)
-            glVertex2f(cur.x, cur.y)
-            glEnd()
-            if t == 0:
-                Drawer.displayTitle(f"({cur.x:.0f},{cur.y:.0f})", cur.x, cur.y)
+    def drawLine(p1: Point, p2: Point, *color):
+        if color is not None:
+            glColor3f(*color)
+        glVertex2f(p1.x, p1.y)
+        glVertex2f(p2.x, p2.y)
+
+    @staticmethod
+    def drawCoords(p: Point, *color):
+        if color is not None:
+            color = 1, 1, 1
+        Drawer.displayText(f"({p.x:.0f},{p.y:.0f})", p.x, p.y, *color)
