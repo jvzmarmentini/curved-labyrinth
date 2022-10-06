@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import os
+import random
 from select import POLLHUP
 
 from OpenGL.GL import *
@@ -57,9 +58,11 @@ def initCurves() -> None:
 def initCharacters() -> None:
     global characters
 
-    # characters["char1"] = Character(model=Windmill())
-    characters["char2"] = Character(model=Windmill())
-    curves[0].getOnRails(characters["char2"])
+    for idx in range(5):
+        name = f"enemy{idx}"
+        characters[name] = Character(model=Windmill())
+        startCurveIdx = random.randint(0, len(curves) - 1)
+        curves[startCurveIdx].getOnRails(characters[name])
 
 
 def reshape(w, h):
@@ -100,13 +103,14 @@ def display() -> None:
     glutSwapBuffers()
     
 def animate():
-    et = glutGet(GLUT_ELAPSED_TIME) % 10000 / 10000
+    et = glutGet(GLUT_ELAPSED_TIME) % 1000 / 1000
     
     for char in characters.values():
         char.updateModel()
     
     for curve in curves:
         curve.animate(et)
+        
     glutPostRedisplay()
 
 

@@ -20,36 +20,34 @@ class Curve(Polygon):
 
     def __len__(self):
         return len(self.curvePoints)
-    
+
+    def __str__(self) -> str:
+        return f"Curve={id(self)}, OnRails={list(map(str,self.charsOnRails))}"
+
     def getOnRails(self, char: Character):
         self.charsOnRails.append(char)
-    
-    """animate
-    et: elapsed time
-    """    
+
     def animate(self, et):
-        if self.charsOnRails is None:
-            return
         for char in self.charsOnRails:
-            normalET = abs(char.direction - et)
+            normalET = round(abs(char.direction - et), 5)
             prevT = char.t
-            
+
             if not char.direction and normalET < prevT:
                 chosen, invert = random.choice(list(self.upperNeighbours))
                 char.direction = char.direction ^ invert
-                char.t = normalET
+                char.t = round(abs(invert - normalET), 5)
                 self.charsOnRails.remove(char)
                 chosen.getOnRails(char)
-                return
-            
+                continue
+
             if char.direction and normalET > prevT:
                 chosen, invert = random.choice(list(self.lowerNeighbours))
                 char.direction = char.direction ^ invert
-                char.t = normalET
+                char.t = round(abs(invert - normalET), 5)
                 self.charsOnRails.remove(char)
                 chosen.getOnRails(char)
-                return
-                
+                continue
+
             char.t = normalET
             char.position = self.lerp(normalET)
 

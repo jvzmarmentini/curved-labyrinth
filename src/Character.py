@@ -14,6 +14,9 @@ class Character:
         self.t = t
         self.direction = 0
         
+    def __str__(self) -> str:
+        return f"{id(self)}"
+        
     def updateModel(self):
         self.model.animate()
 
