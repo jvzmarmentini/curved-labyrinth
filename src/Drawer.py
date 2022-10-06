@@ -40,3 +40,12 @@ class Drawer():
         if color is not None:
             color = 1, 1, 1
         Drawer.displayText(f"({p.x:.0f},{p.y:.0f})", p.x, p.y, *color)
+
+    @staticmethod
+    def drawPolygon(vertices: Polygon, *color):
+        if color is not None:
+            glColor3f(*color)
+        glBegin(GL_LINE_LOOP)
+        for vertice in vertices:
+            glVertex3f(vertice.x, vertice.y, vertice.z)
+        glEnd()
