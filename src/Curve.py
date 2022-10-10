@@ -1,4 +1,8 @@
 
+from cmath import sqrt
+from ctypes.wintypes import POINT
+import math
+from typing import List
 import numpy as np
 import random
 from OpenGL.GL import *
@@ -16,7 +20,7 @@ class Curve(Polygon):
         super().__init__(*v)
         self.lowerNeighbours = set()
         self.upperNeighbours = set()
-        self.charsOnRails = []
+        self.charsOnRails: List[Character] = []
 
     def __len__(self):
         return len(self.curvePoints)
@@ -29,27 +33,19 @@ class Curve(Polygon):
 
     def animate(self, et):
         for char in self.charsOnRails:
-            normalET = round(abs(char.direction - et), 5)
-            prevT = char.t
-
-            if not char.direction and normalET < prevT:
-                chosen, invert = random.choice(list(self.upperNeighbours))
+            normalEt = round(abs(char.direction - et), 3)
+            if et < char.t:
+                if not char.direction:
+                    chosen, invert = random.choice(list(self.upperNeighbours))
+                else:
+                    chosen, invert = random.choice(list(self.lowerNeighbours))
                 char.direction = char.direction ^ invert
-                char.t = round(abs(invert - normalET), 5)
                 self.charsOnRails.remove(char)
                 chosen.getOnRails(char)
-                continue
+            else:
+                char.position = self.lerp(normalEt)
 
-            if char.direction and normalET > prevT:
-                chosen, invert = random.choice(list(self.lowerNeighbours))
-                char.direction = char.direction ^ invert
-                char.t = round(abs(invert - normalET), 5)
-                self.charsOnRails.remove(char)
-                chosen.getOnRails(char)
-                continue
-
-            char.t = normalET
-            char.position = self.lerp(normalET)
+            char.t = et
 
     def generate(self):
         Drawer.drawCoords(self.lerp(0))

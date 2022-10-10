@@ -24,7 +24,7 @@ def initCurves() -> None:
     global curves
 
     points = []
-    with open("./assets/basePoints.txt") as f:
+    with open("./assets/t1.txt") as f:
         for line in f:
             coord = list(map(float, line.split()))
             x = coord[0]
@@ -33,7 +33,7 @@ def initCurves() -> None:
 
     curves = []
     refs = []
-    with open("./assets/curves.txt") as f:
+    with open("./assets/t2.txt") as f:
         for line in f:
             vertices = [points[i] for i in map(int, line.split())]
             curve = Curve(None, *vertices)
@@ -58,7 +58,7 @@ def initCurves() -> None:
 def initCharacters() -> None:
     global characters
 
-    for idx in range(5):
+    for idx in range(1):
         name = f"enemy{idx}"
         characters[name] = Character(model=Windmill())
         startCurveIdx = random.randint(0, len(curves) - 1)
@@ -80,8 +80,8 @@ def reshape(w, h):
 def init() -> None:
     global scene
 
-    minPoint = Point(-5, -5, 0)
-    maxPoint = Point(5, 5, 0)
+    minPoint = Point(-6, -6, 0)
+    maxPoint = Point(6, 6, 0)
     scene = Polygon(None, minPoint, maxPoint)
     initCurves()
     initCharacters()
@@ -103,7 +103,7 @@ def display() -> None:
     glutSwapBuffers()
     
 def animate():
-    et = glutGet(GLUT_ELAPSED_TIME) % 1000 / 1000
+    et = glutGet(GLUT_ELAPSED_TIME) % 10000 / 10000
     
     for char in characters.values():
         char.updateModel()
