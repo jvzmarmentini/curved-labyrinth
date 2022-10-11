@@ -10,7 +10,7 @@ from src.Drawer import Drawer
 class Character:
     def __init__(self, model=None, position=Point(), scale=Point(1, 1, 1), rotation=.0, t=.0) -> None:
         self.model = model
-        self.boundingBox = (self.model.getLimits(scale))
+        # self.boundingBox = (self.model.getLimits(scale))
         self.position = position
         self.relativePos = position
         self.scale = scale
@@ -29,7 +29,7 @@ class Character:
         self.relativePos -= self.position
 
     def draw(self):
-        Drawer.drawBBox(self.boundingBox, 1, 1, 0)
+        # Drawer.drawBBox(self.boundingBox, 1, 1, 0)
         glPushMatrix()
         glTranslatef(self.position.x, self.position.y, 0)
         glRotatef(self.rotation, 0, 0, 1)
