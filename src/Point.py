@@ -1,5 +1,6 @@
 import math
 import typing
+
 from typing_extensions import Self
 
 

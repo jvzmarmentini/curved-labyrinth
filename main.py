@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import os
+import random
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -12,10 +13,12 @@ from src.Drawer import *
 from src.Polygon import *
 from src.Train import Train
 
-flagDrawAxis = True
+flagDrawAxis = False
 scene = None
 curves = []
-characters = {}
+characters = []
+player = Character(model=Train(
+    color=[1, 0, 1]), scale=Point(.5, .5, 1), isPlayer=True)
 
 
 def initCurves() -> None:
@@ -55,14 +58,14 @@ def initCurves() -> None:
 def initCharacters() -> None:
     global characters
 
-    characters["player"] = Character(model=Train(color=[1, 0, 1]), scale=Point(.5,.5,1))
-    curves[0].getOnRails(characters["player"])
+    characters.append(player)
+    curves[0].getOnRails(player)
 
-    # for idx in range(1):
-    #     name = f"enemy{idx}"
-    #     characters[name] = Character(model=Windmill(color=[0,1,1]))
-    #     startCurveIdx = random.randint(0, len(curves) - 1)
-    #     curves[startCurveIdx].getOnRails(characters[name])
+    for _ in range(5):
+        enemy = Character(model=Train(
+            color=[0, 1, 1]), scale=Point(.5, .5, 1))
+        characters.append(enemy)
+        curves[random.randint(0, len(curves) - 1)].getOnRails(enemy)
 
 
 def init() -> None:
@@ -97,20 +100,20 @@ def display() -> None:
     for curve in curves:
         curve.generate()
 
-    for char in characters.values():
+    for char in characters:
         char.draw()
 
     glutSwapBuffers()
 
 
 def animate():
-    et = glutGet(GLUT_ELAPSED_TIME) % 1000 / 1000
-
-    for char in characters.values():
-        char.updateModel()
+    et = glutGet(GLUT_ELAPSED_TIME) % 10000 / 10000
 
     for curve in curves:
         curve.animate(et)
+
+    for char in characters:
+        char.updateModel()
 
     glutPostRedisplay()
 
@@ -119,7 +122,7 @@ def keyboard(*args) -> None:
     if args[0] == b'q' or args[0] == b'\x1b':
         os._exit(0)
     if args[0].isspace():
-        print("space")
+        player.direction = not player.direction
 
     glutPostRedisplay()
 
