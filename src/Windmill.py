@@ -1,33 +1,28 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from typing_extensions import Self
 
 from src.Point import Point
 from src.Polygon import Polygon
 
 
 class Windmill(Polygon):
-    def __init__(self, *v: Point):
+    def __init__(self, color, *v: Point):
         super().__init__(*v)
-        # self.min, self.max = self.getLimits()
         self.tower = Polygon(filepath="assets/tower.txt")
-        self.halfBlades = Polygon(filepath="assets/halfBlade.txt")
+        self.halfBlade = Polygon(filepath="assets/halfBlade.txt")
         self.bladeAngle = 1
+        self.color = color
 
     def animate(self) -> None:
         self.bladeAngle += 1
 
-    def collision(self, bbox: Self) -> bool:
-        return self.min.x <= bbox.max.x and self.max.x >= bbox.min.x and (
-            self.min.y <= bbox.max.y and self.max.y >= bbox.min.y)
-
     def drawSingelBlade(self):
         glPushMatrix()
         glTranslated(-4, 0, 0)
-        self.halfBlades.draw()
-        glScaled(1,-1, 1)
-        self.halfBlades.draw()
+        self.halfBlade.draw()
+        glScaled(1, -1, 1)
+        self.halfBlade.draw()
         glPopMatrix()
 
     def drawBlades(self):
@@ -49,9 +44,9 @@ class Windmill(Polygon):
     def drawEntity(self):
         glLineWidth(3)
         glPushMatrix()
+        glColor3f(*self.color)
         self.drawTower()
         glPushMatrix()
-        glColor3f(1, 0, 0)
         towerMaxY = self.tower.getLimitsMax().y
         glTranslated(0, towerMaxY, 0)
         glScaled(0.2, 0.2, 1)

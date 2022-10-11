@@ -35,21 +35,31 @@ class Point:
         anguloRad = angulo * 3.14159265359/180.0
         xr = self.x*math.cos(anguloRad) - self.y*math.sin(anguloRad)
         yr = self.x*math.sin(anguloRad) + self.y*math.cos(anguloRad)
-        self.x = xr
-        self.y = yr
 
-        return self
+        return Point(xr, yr, self.z)
 
-    def rotacionaY(self, angulo: float) -> None:
+    def rotateY(self, angulo: float) -> None:
         anguloRad = angulo * 3.14159265359/180.0
         xr = self.x*math.cos(anguloRad) + self.z*math.sin(anguloRad)
         zr = -self.x*math.sin(anguloRad) + self.z*math.cos(anguloRad)
         self.x = xr
         self.z = zr
 
-    def rotacionaX(self, angulo: float) -> None:
+    def rotateX(self, angulo: float) -> None:
         anguloRad = angulo * 3.14159265359/180.0
         yr = self.y*math.cos(anguloRad) - self.z*math.sin(anguloRad)
         zr = self.y*math.sin(anguloRad) + self.z*math.cos(anguloRad)
         self.y = yr
         self.z = zr
+
+    @staticmethod
+    def getMax(a: Self, b: Self) -> Self:
+        return Point(max(a.x, b.x),
+                     max(a.y, b.y),
+                     max(a.z, b.z))
+
+    @staticmethod
+    def getMin(a: Self, b: Self) -> Self:
+        return Point(min(a.x, b.x),
+                     min(a.y, b.y),
+                     min(a.z, b.z))
