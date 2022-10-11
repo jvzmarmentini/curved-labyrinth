@@ -1,3 +1,4 @@
+from fnmatch import translate
 import random
 from typing import List, Set
 
@@ -30,6 +31,8 @@ class Curve(Polygon):
 
     def animate(self, et: float) -> None:
         for char in self.charsOnRails:
+            if char.isPlayer:
+                char.collision(self.charsOnRails)
             normalEt = round(abs(char.direction - et), 3)
             if et < char.t:
                 if not char.direction:
