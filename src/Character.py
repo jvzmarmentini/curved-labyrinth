@@ -10,7 +10,7 @@ from src.Drawer import Drawer
 class Character:
     def __init__(self, model=None, position=Point(), scale=Point(1, 1, 1), rotation=.0, t=.0) -> None:
         self.model = model
-        self.boundingBox = (self.model.getLimits(scale))
+        self.boundingBox = (self.model.getBBox(scale))
         self.position = position
         self.relativePos = position
         self.scale = scale

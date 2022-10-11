@@ -14,10 +14,10 @@ class Train(Polygon):
         self.color = color
         
     def getBBox(self, scale: Point) -> Tuple[Point,Point]:
-        lMin, lMax = self.getLimits()
-        lMin.x *= scale.x
-        lMin.y *= scale.y
-        lMin.z *= scale.z
+        # lMin, lMax = self.getLimits()
+        # lMin.x *= scale.x
+        # lMin.y *= scale.y
+        # lMin.z *= scale.z
         pass
         # return [map(mul, x, scale) for x in self.cart.getLimits()]
 

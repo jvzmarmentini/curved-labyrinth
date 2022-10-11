@@ -1,35 +1,25 @@
 import math
+import typing
 from typing_extensions import Self
 
 
-class Point:
-    def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0):
-        self.x = x
-        self.y = y
-        self.z = z
+class Point(typing.NamedTuple):
+    x: float = .0
+    y: float = .0
+    z: float = .0
 
-    def __str__(self) -> str:
-        return f"x={self.x:.3f} y={self.y:.3f} z={self.z:.3f}"
+    def __repr__(self):
+        'Return a nicely formatted representation string'
+        return f"Point(x={self.x:.2f},y={self.y:.2f},z={self.z:.2f})"
 
     def __add__(self, other: Self) -> Self:
-        x = self.x + other.x
-        y = self.y + other.y
-        return Point(x, y)
+        return Point(*[a + b for a, b in zip(self, other)])
 
     def __sub__(self, other: Self) -> Self:
-        x = abs(self.x) - abs(other.x)
-        y = abs(self.y) - abs(other.y)
-        return Point(x, y)
+        return Point(*[abs(a) - abs(b) for a, b in zip(self, other)])
 
     def __mul__(self, other: float) -> Self:
-        x = self.x * other
-        y = self.y * other
-        return Point(x, y)
-
-    def set(self, x: float, y: float, z: float = 0) -> None:
-        self.x = x
-        self.y = y
-        self.z = z
+        return Point(*[a * other for a in self])
 
     def rotateZ(self, angulo: float) -> Self:
         anguloRad = angulo * 3.14159265359/180.0
@@ -51,15 +41,3 @@ class Point:
         zr = self.y*math.sin(anguloRad) + self.z*math.cos(anguloRad)
         self.y = yr
         self.z = zr
-
-    @staticmethod
-    def getMax(a: Self, b: Self) -> Self:
-        return Point(max(a.x, b.x),
-                     max(a.y, b.y),
-                     max(a.z, b.z))
-
-    @staticmethod
-    def getMin(a: Self, b: Self) -> Self:
-        return Point(min(a.x, b.x),
-                     min(a.y, b.y),
-                     min(a.z, b.z))
