@@ -1,53 +1,42 @@
 import math
+import typing
+
 from typing_extensions import Self
 
 
-class Point:
-    def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0):
-        self.x = x
-        self.y = y
-        self.z = z
+class Point(typing.NamedTuple):
+    x: float = .0
+    y: float = .0
+    z: float = .0
 
-    def __str__(self) -> str:
-        return f"x={self.x:.3f} y={self.y:.3f} z={self.z:.3f}"
+    def __repr__(self):
+        'Return a nicely formatted representation string'
+        return f"Point(x={self.x:.2f},y={self.y:.2f},z={self.z:.2f})"
 
     def __add__(self, other: Self) -> Self:
-        x = self.x + other.x
-        y = self.y + other.y
-        return Point(x, y)
+        return Point(*[a + b for a, b in zip(self, other)])
 
     def __sub__(self, other: Self) -> Self:
-        x = abs(self.x) - abs(other.x)
-        y = abs(self.y) - abs(other.y)
-        return Point(x, y)
+        return Point(*[abs(a) - abs(b) for a, b in zip(self, other)])
 
     def __mul__(self, other: float) -> Self:
-        x = self.x * other
-        y = self.y * other
-        return Point(x, y)
-
-    def set(self, x: float, y: float, z: float = 0) -> None:
-        self.x = x
-        self.y = y
-        self.z = z
+        return Point(*[a * other for a in self])
 
     def rotateZ(self, angulo: float) -> Self:
         anguloRad = angulo * 3.14159265359/180.0
         xr = self.x*math.cos(anguloRad) - self.y*math.sin(anguloRad)
         yr = self.x*math.sin(anguloRad) + self.y*math.cos(anguloRad)
-        self.x = xr
-        self.y = yr
 
-        return self
+        return Point(xr, yr, self.z)
 
-    def rotacionaY(self, angulo: float) -> None:
+    def rotateY(self, angulo: float) -> None:
         anguloRad = angulo * 3.14159265359/180.0
         xr = self.x*math.cos(anguloRad) + self.z*math.sin(anguloRad)
         zr = -self.x*math.sin(anguloRad) + self.z*math.cos(anguloRad)
         self.x = xr
         self.z = zr
 
-    def rotacionaX(self, angulo: float) -> None:
+    def rotateX(self, angulo: float) -> None:
         anguloRad = angulo * 3.14159265359/180.0
         yr = self.y*math.cos(anguloRad) - self.z*math.sin(anguloRad)
         zr = self.y*math.sin(anguloRad) + self.z*math.cos(anguloRad)

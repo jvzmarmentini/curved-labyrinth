@@ -2,7 +2,6 @@
 import argparse
 import os
 import random
-from select import POLLHUP
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -12,28 +11,29 @@ from src.Character import Character
 from src.Curve import Curve
 from src.Drawer import *
 from src.Polygon import *
-from src.Windmill import Windmill
+from src.Train import Train
 
-flagDrawAxis = True
+flagDrawAxis = False
 scene = None
-curves = None
-characters = {}
+curves = []
+characters = []
+player = Character(model=Train(
+    color=[1, 0, 1]), scale=Point(.5, .5, 1), isPlayer=True)
 
 
 def initCurves() -> None:
     global curves
 
     points = []
-    with open("./assets/t1.txt") as f:
+    with open("./assets/basePoints.txt") as f:
         for line in f:
             coord = list(map(float, line.split()))
             x = coord[0]
             y = coord[1]
             points.append(Point(x, y))
 
-    curves = []
     refs = []
-    with open("./assets/t2.txt") as f:
+    with open("./assets/curves.txt") as f:
         for line in f:
             vertices = [points[i] for i in map(int, line.split())]
             curve = Curve(None, *vertices)
@@ -58,11 +58,24 @@ def initCurves() -> None:
 def initCharacters() -> None:
     global characters
 
-    for idx in range(1):
-        name = f"enemy{idx}"
-        characters[name] = Character(model=Windmill())
-        startCurveIdx = random.randint(0, len(curves) - 1)
-        curves[startCurveIdx].getOnRails(characters[name])
+    characters.append(player)
+    curves[0].getOnRails(player)
+
+    for _ in range(5):
+        enemy = Character(model=Train(
+            color=[0, 1, 1]), scale=Point(.5, .5, 1))
+        characters.append(enemy)
+        curves[random.randint(0, len(curves) - 1)].getOnRails(enemy)
+
+
+def init() -> None:
+    global scene
+
+    minPoint = Point(-6, -6, 0)
+    maxPoint = Point(6, 6, 0)
+    scene = Polygon(None, minPoint, maxPoint)
+    initCurves()
+    initCharacters()
 
 
 def reshape(w, h):
@@ -77,16 +90,6 @@ def reshape(w, h):
     glLoadIdentity()
 
 
-def init() -> None:
-    global scene
-
-    minPoint = Point(-6, -6, 0)
-    maxPoint = Point(6, 6, 0)
-    scene = Polygon(None, minPoint, maxPoint)
-    initCurves()
-    initCharacters()
-
-
 def display() -> None:
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
@@ -97,26 +100,29 @@ def display() -> None:
     for curve in curves:
         curve.generate()
 
-    for char in characters.values():
+    for char in characters:
         char.draw()
 
     glutSwapBuffers()
-    
+
+
 def animate():
     et = glutGet(GLUT_ELAPSED_TIME) % 10000 / 10000
-    
-    for char in characters.values():
-        char.updateModel()
-    
+
     for curve in curves:
         curve.animate(et)
-        
+
+    for char in characters:
+        char.updateModel()
+
     glutPostRedisplay()
 
 
 def keyboard(*args) -> None:
     if args[0] == b'q' or args[0] == b'\x1b':
         os._exit(0)
+    if args[0].isspace():
+        player.direction = not player.direction
 
     glutPostRedisplay()
 

@@ -1,3 +1,4 @@
+from typing import Tuple
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
@@ -49,3 +50,17 @@ class Drawer():
         for vertice in vertices:
             glVertex3f(vertice.x, vertice.y, vertice.z)
         glEnd()
+
+    @staticmethod
+    def drawBBox(bbox: Tuple[Point, Point], *color):
+        if bbox is None:
+            return
+        if color is not None:
+            glColor3f(*color)
+        glBegin(GL_LINE_LOOP)
+        glVertex3f(bbox[0].x, bbox[0].y, bbox[0].z)
+        glVertex3f(bbox[0].x, bbox[1].y, bbox[0].z)
+        glVertex3f(bbox[1].x, bbox[1].y, bbox[0].z)
+        glVertex3f(bbox[1].x, bbox[0].y, bbox[0].z)
+        glEnd()
+    
