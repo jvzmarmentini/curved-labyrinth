@@ -1,9 +1,10 @@
 from typing import Tuple
+
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from src.Point import *
+from src.Point import Point
 from src.Polygon import Polygon
 
 
@@ -63,4 +64,3 @@ class Drawer():
         glVertex3f(bbox[1].x, bbox[1].y, bbox[0].z)
         glVertex3f(bbox[1].x, bbox[0].y, bbox[0].z)
         glEnd()
-    
