@@ -1,4 +1,3 @@
-from fnmatch import translate
 import random
 from typing import List, Set
 
@@ -33,19 +32,33 @@ class Curve(Polygon):
         for char in self.charsOnRails:
             if char.isPlayer:
                 char.collision(self.charsOnRails)
-            normalEt = round(abs(char.direction - et), 3)
-            if et < char.t:
-                if not char.direction:
-                    chosen, invert = random.choice(list(self.upperNeighbours))
-                else:
-                    chosen, invert = random.choice(list(self.lowerNeighbours))
-                char.direction = char.direction ^ invert
-                self.charsOnRails.remove(char)
-                chosen.getOnRails(char)
+            if char.direction:
+                char.t -= et
+                if char.t <= .5:
+                    # TODO: choose next
+                    pass
+                if char.t <= 1:
+                    # TODO: change to next
+                    pass
             else:
-                char.position = self.lerp(normalEt)
-
-            char.t = et
+                char.t += et
+                if char.t >= .5:
+                    # TODO: choose next
+                    pass
+                if char.t >= 1:
+                    # TODO: change to next
+                    pass
+            # if et < char.t:
+            #     if not char.direction:
+            #         chosen, invert = random.choice(list(self.upperNeighbours))
+            #     else:
+            #         chosen, invert = random.choice(list(self.lowerNeighbours))
+            #     char.direction = char.direction ^ invert
+            #     self.charsOnRails.remove(char)
+            #     chosen.getOnRails(char)
+            # else:
+            char.position = self.lerp(char.t)
+        
 
     def generate(self) -> None:
         Drawer.drawCoords(self.lerp(0))

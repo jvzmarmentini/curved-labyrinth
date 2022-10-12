@@ -25,7 +25,7 @@ def initCurves() -> None:
     global curves
 
     points = []
-    with open("./assets/basePoints.txt") as f:
+    with open("./assets/t1.txt") as f:
         for line in f:
             coord = list(map(float, line.split()))
             x = coord[0]
@@ -33,7 +33,7 @@ def initCurves() -> None:
             points.append(Point(x, y))
 
     refs = []
-    with open("./assets/curves.txt") as f:
+    with open("./assets/t2.txt") as f:
         for line in f:
             vertices = [points[i] for i in map(int, line.split())]
             curve = Curve(None, *vertices)
@@ -61,7 +61,7 @@ def initCharacters() -> None:
     characters.append(player)
     curves[0].getOnRails(player)
 
-    for _ in range(5):
+    for _ in range(0):
         enemy = Character(model=Train(
             color=[0, 1, 1]), scale=Point(.5, .5, 1))
         characters.append(enemy)
@@ -105,15 +105,18 @@ def display() -> None:
 
     glutSwapBuffers()
 
-
+diffEt = 0
 def animate():
-    et = glutGet(GLUT_ELAPSED_TIME) % 10000 / 10000
-
+    global diffEt
+    et = glutGet(GLUT_ELAPSED_TIME)
+    
     for curve in curves:
-        curve.animate(et)
+        curve.animate((et - diffEt) / 10000.0)
 
     for char in characters:
         char.updateModel()
+        
+    diffEt = et
 
     glutPostRedisplay()
 

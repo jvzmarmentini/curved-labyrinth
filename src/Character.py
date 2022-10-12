@@ -10,12 +10,12 @@ from src.Point import Point
 
 
 class Character:
-    def __init__(self, model=None, position: float = Point(), scale: float = Point(1, 1, 1), rotation=.0, t: float = .0, isPlayer: bool = False) -> None:
+    def __init__(self, model=None, position: float = Point(), scale: float = Point(1, 1, 1), rotation=.0, isPlayer: bool = False) -> None:
         self.model = model
         self.position = position
         self.scale = scale
         self.rotation = rotation
-        self.t = t
+        self.t = 0
         self.direction = 0
         self.isPlayer = isPlayer
 
@@ -24,9 +24,15 @@ class Character:
         self.minEdge = [v * s for v,
                         s in zip(self.model.getLimitsMin(), scale)]
         self.boundingBox = None
+        
+        self.trail = None
+        self.nextTrail = None
 
     def __str__(self) -> str:
         return f"{id(self)}"
+    
+    def animate(self):
+        pass    
 
     def updateModel(self):
         animate = getattr(self.model, "animate", None)
@@ -41,7 +47,7 @@ class Character:
         pass
 
     def draw(self):
-        # Drawer.drawBBox(self.boundingBox, 1, 1, 0)
+        Drawer.drawBBox(self.boundingBox, 1, 1, 0)
         glPushMatrix()
         glTranslatef(self.position.x, self.position.y, 0)
         glRotatef(self.rotation, 0, 0, 1)
