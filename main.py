@@ -2,6 +2,7 @@
 import argparse
 import os
 import random
+from collections import namedtuple
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -9,8 +10,9 @@ from OpenGL.GLUT import *
 
 from src.Character import Character
 from src.Curve import Curve
-from src.Drawer import *
-from src.Polygon import *
+from src.Drawer import Drawer
+from src.Point import Point
+from src.Polygon import Polygon
 from src.Train import Train
 
 flagDrawAxis = False
@@ -44,14 +46,15 @@ def initCurves() -> None:
         for ref2, curve2 in zip(refs, curves):
             if curve == curve2:
                 continue
+            Path = namedtuple("Path", "curve invert")
             if ref[0] == ref2[0]:
-                curve.lowerNeighbours.add((curve2, 1))
+                curve.lowerNeighbours.add(Path(curve2, 1))
             if ref[0] == ref2[1]:
-                curve.lowerNeighbours.add((curve2, 0))
+                curve.lowerNeighbours.add(Path(curve2, 0))
             if ref[1] == ref2[0]:
-                curve.upperNeighbours.add((curve2, 0))
+                curve.upperNeighbours.add(Path(curve2, 0))
             if ref[1] == ref2[1]:
-                curve.upperNeighbours.add((curve2, 1))
+                curve.upperNeighbours.add(Path(curve2, 1))
 
 
 def initCharacters() -> None:
@@ -62,7 +65,8 @@ def initCharacters() -> None:
 
     for _ in range(10):
         velocity = random.uniform(2.0, 4.0)
-        enemy = Character(model=Train(0, 1, 1), scale=Point(.5, .5, 1), velocity=velocity)
+        enemy = Character(model=Train(0, 1, 1),
+                          scale=Point(.5, .5, 1), velocity=velocity)
         characters.append(enemy)
         enemy.setTrail(curves[random.randint(
             0, len(curves) - 1)], random.getrandbits(1))
@@ -96,7 +100,7 @@ def display() -> None:
 
     player.trail.color = 1, 0, 1
     if player.nextTrail is not None:
-        player.nextTrail[0].color = 1, 1, 0
+        player.nextTrail.curve.color = 1, 1, 0
 
     if flagDrawAxis:
         Drawer.drawAxis(scene)
