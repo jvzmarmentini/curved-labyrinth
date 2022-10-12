@@ -9,7 +9,7 @@ from src.Polygon import Polygon
 
 
 class Train(Polygon):
-    def __init__(self, color):
+    def __init__(self, *color):
         super().__init__(filepath="assets/cart.txt")
         self.color = color
 
