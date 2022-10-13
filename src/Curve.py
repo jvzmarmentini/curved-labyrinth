@@ -1,5 +1,8 @@
+from collections import deque
+import itertools
 import random
-from typing import NamedTuple, Set
+from itertools import cycle
+from typing import Deque, List, NamedTuple, Set
 
 import numpy as np
 from OpenGL.GL import *
@@ -15,8 +18,8 @@ from src.Polygon import Polygon
 class Curve(Polygon):
     def __init__(self, *v):
         super().__init__(*v)
-        self.lowerNeighbours: Set[NamedTuple[Self, int]] = set()
-        self.upperNeighbours: Set[NamedTuple[Self, int]] = set()
+        self.lowNeighbours: Deque[NamedTuple[Self, int]] = deque()
+        self.upNeighbours: Deque[NamedTuple[Self, int]] = deque()
         self.color = .5, .5, .5
 
     def __len__(self) -> int:
@@ -26,10 +29,10 @@ class Curve(Polygon):
         return f"Curve={id(self)}, OnRails={list(map(str,self.charsOnRails))}"
 
     def randLowNeighbours(self):
-        return random.choice(list(self.lowerNeighbours))
+        return random.choice(list(self.lowNeighbours))
 
     def randUpNeighbours(self):
-        return random.choice(list(self.upperNeighbours))
+        return random.choice(list(self.upNeighbours))
 
     def generate(self) -> None:
         Drawer.drawCoords(self.lerp(0))

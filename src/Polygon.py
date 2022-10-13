@@ -44,17 +44,17 @@ class Polygon:
     def getVertice(self, i) -> Point:
         return copy.deepcopy(self.vertices[i])
 
-    def getLimitsMin(self) -> Point:
+    def getLimitsMin(self, scale: Point = Point(1, 1, 1)) -> Point:
         assert len(self.vertices) > 0
-        return Point(min([v.x for v in self.vertices]),
-                     min([v.y for v in self.vertices]),
-                     min([v.z for v in self.vertices]))
+        return Point(min([v.x for v in self.vertices]) * scale.x,
+                     min([v.y for v in self.vertices]) * scale.y,
+                     min([v.z for v in self.vertices]) * scale.z)
 
-    def getLimitsMax(self) -> Point:
+    def getLimitsMax(self, scale: Point = Point(1, 1, 1)) -> Point:
         assert len(self.vertices) > 0
-        return Point(max([v.x for v in self.vertices]),
-                     max([v.y for v in self.vertices]),
-                     max([v.z for v in self.vertices]))
+        return Point(max([v.x for v in self.vertices]) * scale.x,
+                     max([v.y for v in self.vertices]) * scale.y,
+                     max([v.z for v in self.vertices]) * scale.z)
 
     def getLimits(self) -> Tuple[Point, Point]:
         return self.getLimitsMin(), self.getLimitsMax()

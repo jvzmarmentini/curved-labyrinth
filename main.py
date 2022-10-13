@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import argparse
 import os
-import random
 from collections import namedtuple
+from random import choice, getrandbits, uniform
+from typing import List
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -17,9 +18,9 @@ from src.Train import Train
 
 flagDrawAxis = False
 scene = None
-curves = []
-characters = []
-player = Character(model=Train(1, 0, 1), scale=Point(.5, .5, 1))
+curves: List[Curve] = []
+characters: List[Character] = []
+player: Character = Character(model=Train(1, 0, 1), scale=Point(.5, .5, 1), isPlayer=True)
 
 
 def initCurves() -> None:
@@ -29,9 +30,7 @@ def initCurves() -> None:
     with open("./assets/basePoints.txt") as f:
         for line in f:
             coord = list(map(float, line.split()))
-            x = coord[0]
-            y = coord[1]
-            points.append(Point(x, y))
+            points.append(Point(*coord))
 
     refs = []
     with open("./assets/curves.txt") as f:
@@ -48,28 +47,29 @@ def initCurves() -> None:
                 continue
             Path = namedtuple("Path", "curve invert")
             if ref[0] == ref2[0]:
-                curve.lowerNeighbours.add(Path(curve2, 1))
+                curve.lowNeighbours.append(Path(curve2, 1))
             if ref[0] == ref2[1]:
-                curve.lowerNeighbours.add(Path(curve2, 0))
+                curve.lowNeighbours.append(Path(curve2, 0))
             if ref[1] == ref2[0]:
-                curve.upperNeighbours.add(Path(curve2, 0))
+                curve.upNeighbours.append(Path(curve2, 0))
             if ref[1] == ref2[1]:
-                curve.upperNeighbours.add(Path(curve2, 1))
+                curve.upNeighbours.append(Path(curve2, 1))
 
 
 def initCharacters() -> None:
     global characters
 
     characters.append(player)
-    player.setTrail(curves[0])
+    player.trail = curves[0]
 
-    for _ in range(10):
-        velocity = random.uniform(2.0, 4.0)
+    for _ in range(0):
         enemy = Character(model=Train(0, 1, 1),
-                          scale=Point(.5, .5, 1), velocity=velocity)
+                          scale=Point(.5, .5, 1),
+                          velocity=uniform(2.0, 4.0),
+                          t=.5)
         characters.append(enemy)
-        enemy.setTrail(curves[random.randint(
-            0, len(curves) - 1)], random.getrandbits(1))
+        enemy.trail = choice(curves[1:])
+        enemy.direction = getrandbits(1)
 
 
 def init() -> None:
@@ -129,11 +129,20 @@ def animate():
     glutPostRedisplay()
 
 
-def keyboard(*args) -> None:
-    if args[0] == b'q' or args[0] == b'\x1b':
+def keyboard(key: bytes, x, y) -> None:
+    if key == b'q' or key == b'\x1b':
         os._exit(0)
-    if args[0].isspace():
+    if key == b' ':
         player.invertDirection()
+
+    glutPostRedisplay()
+
+
+def arrow_keys(a_keys: int, x, y) -> None:
+    if a_keys == GLUT_KEY_LEFT:
+        player.setNext(1)
+    if a_keys == GLUT_KEY_RIGHT:
+        player.setNext(-1)
 
     glutPostRedisplay()
 
@@ -146,18 +155,19 @@ def main() -> None:
     glutInitDisplayMode(GLUT_RGBA)
     glutInitWindowSize(900, 900)
 
-    glutCreateWindow("Pontos no Triangulo")
+    glutCreateWindow("Curved Labyrinth")
     glutDisplayFunc(display)
     glutIdleFunc(animate)
     init()
 
     glutReshapeFunc(reshape)
     glutKeyboardFunc(keyboard)
+    glutSpecialFunc(arrow_keys)
 
-    try:
-        glutMainLoop()
-    except SystemExit:
-        pass
+    # try:
+    glutMainLoop()
+    # except SystemExit:
+    #     pass
 
 
 if __name__ == '__main__':

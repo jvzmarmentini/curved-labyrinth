@@ -1,42 +1,43 @@
 
-from typing import List
+from collections import namedtuple
+from dataclasses import dataclass
+from typing import NamedTuple
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from typing_extensions import Self
 
 from src.Curve import Curve
 from src.Drawer import Drawer
 from src.Point import Point
+from src.Polygon import Polygon
 
 
+@dataclass
 class Character:
-    def __init__(self, model=None, scale: float = Point(1, 1, 1), velocity: float = 2.0) -> None:
-        self.model = model
-        self.position = Point()
-        self.scale = scale
-        self.rotation = .0
+    model: Polygon = None
+    isPlayer: bool = False
+    position: Point = Point()
+    scale: Point = Point(1, 1, 1)
+    rotation: float = .0
 
-        self.t = .0
-        self.direction = 0
-        self.velocity = velocity
+    t: float = .0
+    direction: int = 0
+    velocity: float = 8.0
 
-        self.maxEdge = [v * s for v,
-                        s in zip(self.model.getLimitsMax(), scale)]
-        self.minEdge = [v * s for v,
-                        s in zip(self.model.getLimitsMin(), scale)]
-        self.boundingBox = None
+    maxEdge: Point = None
+    minEdge: Point = None
+    boundingBox = None
 
-        self.trail = None
-        self.nextTrail = None
+    trail: Curve = None
+    nextTrail = None
+
+    def __post_init__(self):
+        self.maxEdge = self.model.getLimitsMax(self.scale)
+        self.minEdge = self.model.getLimitsMin(self.scale)
 
     def __str__(self) -> str:
         return f"{id(self)}"
-
-    def setTrail(self, trail: Curve, direction: bool = False):
-        self.trail = trail
-        self.direction = direction
 
     def invertDirection(self):
         self.direction = not self.direction
@@ -44,29 +45,39 @@ class Character:
             self.nextTrail.curve.color = .5, .5, .5
             self.nextTrail = None
 
-    def animate(self, et):
-        et /= self.velocity * 1000
+    def setNext(self, rot_dir):
+        if self.t <= .5 and self.direction:
+            self.nextTrail.curve.color = .5, .5, .5
+            self.trail.lowNeighbours.rotate(rot_dir)
+            self.nextTrail = self.trail.lowNeighbours[0]
+        if self.t >= .5 and not self.direction:
+            self.nextTrail.curve.color = .5, .5, .5
+            self.trail.upNeighbours.rotate(rot_dir)
+            self.nextTrail = self.trail.upNeighbours[0]
+        
+    def goToNext(self):
+        self.trail.color = .5, .5, .5
+        self.trail, invert = self.nextTrail
+        self.direction = self.direction ^ invert
+        self.nextTrail = None
+        self.t = self.direction
+
+    def animate(self, delta):
+        delta /= self.velocity * 1000
 
         if self.direction:
-            self.t -= et
+            self.t -= delta
             if self.t <= .5 and self.nextTrail is None:
                 self.nextTrail = self.trail.randLowNeighbours()
             if self.t <= .0:
-                self.trail.color = .5, .5, .5
-                self.trail, invert = self.nextTrail
-                self.direction = self.direction ^ invert
-                self.nextTrail = None
-                self.t = self.direction
+                self.goToNext()
         else:
-            self.t += et
+            self.t += delta
             if self.t >= .5 and self.nextTrail is None:
                 self.nextTrail = self.trail.randUpNeighbours()
             if self.t >= 1.:
-                self.trail.color = .5, .5, .5
-                self.trail, invert = self.nextTrail
-                self.direction = self.direction ^ invert
-                self.nextTrail = None
-                self.t = self.direction
+                self.goToNext()
+
         self.position = self.trail.lerp(self.t)
 
         self.updateModel()
@@ -76,12 +87,9 @@ class Character:
         if callable(animate):
             animate()
 
-        self.boundingBox = (self.position + self.minEdge,
-                            self.position + self.maxEdge)
-
-    def collision(self, enemies: List[Self]):
-        # TODO: test collision
-        pass
+        Limits = namedtuple("Limits", "min max")
+        self.boundingBox = Limits(self.position + self.minEdge,
+                                  self.position + self.maxEdge)
 
     def draw(self):
         Drawer.drawBBox(self.boundingBox, 1, 1, 0)

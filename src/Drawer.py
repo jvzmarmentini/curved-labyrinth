@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import NamedTuple, Tuple
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -53,14 +53,14 @@ class Drawer():
         glEnd()
 
     @staticmethod
-    def drawBBox(bbox: Tuple[Point, Point], *color):
+    def drawBBox(bbox, *color):
         if bbox is None:
             return
         if color is not None:
             glColor3f(*color)
         glBegin(GL_LINE_LOOP)
-        glVertex3f(bbox[0].x, bbox[0].y, bbox[0].z)
-        glVertex3f(bbox[0].x, bbox[1].y, bbox[0].z)
-        glVertex3f(bbox[1].x, bbox[1].y, bbox[0].z)
-        glVertex3f(bbox[1].x, bbox[0].y, bbox[0].z)
+        glVertex3f(*bbox.min)
+        glVertex3f(bbox.min.x, bbox.max.y, 0)
+        glVertex3f(*bbox.max)
+        glVertex3f(bbox.max.x, bbox.min.y, 0)
         glEnd()
