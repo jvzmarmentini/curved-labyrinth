@@ -27,13 +27,13 @@ def initCurves() -> None:
     global curves
 
     points = []
-    with open("./assets/basePoints.txt") as f:
+    with open("./assets/t1.txt") as f:
         for line in f:
             coord = list(map(float, line.split()))
             points.append(Point(*coord))
 
     refs = []
-    with open("./assets/curves.txt") as f:
+    with open("./assets/t2.txt") as f:
         for line in f:
             vertices = [points[i] for i in map(int, line.split())]
             curve = Curve(None, *vertices)

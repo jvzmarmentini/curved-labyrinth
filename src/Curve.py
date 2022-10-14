@@ -1,5 +1,6 @@
 from collections import deque
 import itertools
+from math import sqrt
 import random
 from itertools import cycle
 from typing import Deque, List, NamedTuple, Set
@@ -50,3 +51,12 @@ class Curve(Polygon):
         controlPointA = self.vertices[0] * (1-t) + self.vertices[1] * t
         controlPointB = self.vertices[1] * (1-t) + self.vertices[2] * t
         return controlPointA * (1-t) + controlPointB * t
+
+    def derivative(self, t: float) -> Point:
+        p0, p1, p2 = self.vertices
+        return (p1 - p0) * 2 * (1-t) + (p2 - p1) * 2 * t
+    
+    def normalize(self, t:float) -> Point:
+        derivative = self.derivative(t)
+        d = sqrt(derivative.x ** 2 + derivative.y ** 2)
+        return Point(derivative.x / d, derivative.y / d)

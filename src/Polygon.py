@@ -1,7 +1,5 @@
-import copy
 from typing import Tuple
 
-from multipledispatch import dispatch
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
@@ -33,16 +31,8 @@ class Polygon:
                 points.append(Point(*coord))
         return points
 
-    @dispatch(float, float)
-    def insertVertice(self, x: float, y: float) -> None:
-        self.vertices.append(Point(x, y))
-
-    @dispatch(Point)
     def insertVertice(self, p: Point) -> None:
         self.vertices.append(p)
-
-    def getVertice(self, i) -> Point:
-        return copy.deepcopy(self.vertices[i])
 
     def getLimitsMin(self, scale: Point = Point(1, 1, 1)) -> Point:
         assert len(self.vertices) > 0
@@ -58,14 +48,6 @@ class Polygon:
 
     def getLimits(self) -> Tuple[Point, Point]:
         return self.getLimitsMin(), self.getLimitsMax()
-
-    def modifyVertice(self, i, P):
-        self.vertices[i] = P
-
-    def getEdge(self, n: int) -> Point:
-        v1 = self.vertices[n]
-        v2 = self.vertices[(n+1) % len(self)]
-        return v2 - v1
 
     def draw(self):
         glBegin(GL_LINE_LOOP)

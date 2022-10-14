@@ -1,14 +1,12 @@
-
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import NamedTuple
 
+import numpy as np
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 from src.Curve import Curve
-from src.Drawer import Drawer
 from src.Point import Point
 from src.Polygon import Polygon
 
@@ -22,9 +20,9 @@ class Character:
     rotation: float = .0
 
     t: float = .0
-    direction: int = 0
-    velocity: float = 8.0
-
+    direction: int = False
+    velocity: float = 2.
+    
     maxEdge: Point = None
     minEdge: Point = None
     boundingBox = None
@@ -46,15 +44,16 @@ class Character:
             self.nextTrail = None
 
     def setNext(self, rot_dir):
+        self.nextTrail.curve.color = .5, .5, .5
+
         if self.t <= .5 and self.direction:
-            self.nextTrail.curve.color = .5, .5, .5
             self.trail.lowNeighbours.rotate(rot_dir)
             self.nextTrail = self.trail.lowNeighbours[0]
         if self.t >= .5 and not self.direction:
             self.nextTrail.curve.color = .5, .5, .5
             self.trail.upNeighbours.rotate(rot_dir)
             self.nextTrail = self.trail.upNeighbours[0]
-        
+
     def goToNext(self):
         self.trail.color = .5, .5, .5
         self.trail, invert = self.nextTrail
@@ -82,6 +81,14 @@ class Character:
 
         self.updateModel()
 
+    def updateRotation(self) -> float:
+        normSense = self.trail.normalize(self.t)
+        normY = Point(0, -1, 0)
+        dot = normSense.dot(normY)
+        abMag = normSense.magnitude() * normY.magnitude()
+        angle = np.arccos(dot/abMag)
+        self.rotation = np.rad2deg(angle) + self.direction * 180
+
     def updateModel(self):
         animate = getattr(self.model, "animate", None)
         if callable(animate):
@@ -91,8 +98,10 @@ class Character:
         self.boundingBox = Limits(self.position + self.minEdge,
                                   self.position + self.maxEdge)
 
+        self.updateRotation()
+
     def draw(self):
-        Drawer.drawBBox(self.boundingBox, 1, 1, 0)
+        # Drawer.drawBBox(self.boundingBox, 1, 1, 0)
         glPushMatrix()
         glTranslatef(self.position.x, self.position.y, 0)
         glRotatef(self.rotation, 0, 0, 1)
