@@ -1,14 +1,12 @@
-
-from collections import namedtuple
 from dataclasses import dataclass
-from typing import NamedTuple
 
+import numpy as np
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
+from src.BoundingBox import BoundingBox
 from src.Curve import Curve
-from src.Drawer import Drawer
 from src.Point import Point
 from src.Polygon import Polygon
 
@@ -18,23 +16,16 @@ class Character:
     model: Polygon = None
     isPlayer: bool = False
     position: Point = Point()
-    scale: Point = Point(1, 1, 1)
+    prevPos: Point = Point()
     rotation: float = .0
+    scale: Point = Point(1, 1, 1)
 
     t: float = .0
     direction: int = 0
-    velocity: float = 8.0
-
-    maxEdge: Point = None
-    minEdge: Point = None
-    boundingBox = None
+    velocity: float = 1.
 
     trail: Curve = None
     nextTrail = None
-
-    def __post_init__(self):
-        self.maxEdge = self.model.getLimitsMax(self.scale)
-        self.minEdge = self.model.getLimitsMin(self.scale)
 
     def __str__(self) -> str:
         return f"{id(self)}"
@@ -46,15 +37,16 @@ class Character:
             self.nextTrail = None
 
     def setNext(self, rot_dir):
+        self.nextTrail.curve.color = .5, .5, .5
+
         if self.t <= .5 and self.direction:
-            self.nextTrail.curve.color = .5, .5, .5
             self.trail.lowNeighbours.rotate(rot_dir)
             self.nextTrail = self.trail.lowNeighbours[0]
         if self.t >= .5 and not self.direction:
             self.nextTrail.curve.color = .5, .5, .5
             self.trail.upNeighbours.rotate(rot_dir)
             self.nextTrail = self.trail.upNeighbours[0]
-        
+
     def goToNext(self):
         self.trail.color = .5, .5, .5
         self.trail, invert = self.nextTrail
@@ -69,33 +61,61 @@ class Character:
             self.t -= delta
             if self.t <= .5 and self.nextTrail is None:
                 self.nextTrail = self.trail.randLowNeighbours()
-            if self.t <= .0:
+            if self.t < 0:
                 self.goToNext()
         else:
             self.t += delta
             if self.t >= .5 and self.nextTrail is None:
                 self.nextTrail = self.trail.randUpNeighbours()
-            if self.t >= 1.:
+            if self.t > 1:
                 self.goToNext()
 
+        self.prevPos = self.position
         self.position = self.trail.lerp(self.t)
 
         self.updateModel()
 
+    def updateRotation(self) -> float:
+        sense = self.position - self.prevPos
+        norm = sense.normalize()
+        angle = np.rad2deg(np.arccos(norm.y))
+        if norm.x > 0:
+            angle = 360 - angle
+        self.rotation = angle
+
     def updateModel(self):
+        self.updateRotation()
+
         animate = getattr(self.model, "animate", None)
         if callable(animate):
             animate()
 
-        Limits = namedtuple("Limits", "min max")
-        self.boundingBox = Limits(self.position + self.minEdge,
-                                  self.position + self.maxEdge)
+    def bbox(self, drawFlag: bool = False) -> BoundingBox:
+        bbox = self.model.bbox.transformations(
+            self.rotation, self.scale, self.position
+        )
+        if drawFlag:
+            self.drawBBox(bbox)
+        return bbox
+
+    def collided(self, other: BoundingBox, drawFlag) -> bool:
+        # TODO: not working properly
+        bbox = self.bbox(drawFlag)
+        charBBox = other.bbox(drawFlag)
+        return bbox.minEdge.x <= charBBox.minEdge.x and \
+            bbox.maxEdge.x >= charBBox.maxEdge.x and \
+            bbox.minEdge.y <= charBBox.minEdge.y and \
+            bbox.maxEdge.y >= charBBox.maxEdge.y
+
+    def drawBBox(self, bbox: BoundingBox):
+        glPushMatrix()
+        bbox.draw()
+        glPopMatrix()
 
     def draw(self):
-        Drawer.drawBBox(self.boundingBox, 1, 1, 0)
         glPushMatrix()
-        glTranslatef(self.position.x, self.position.y, 0)
+        glTranslatef(*self.position)
+        glScalef(*self.scale)
         glRotatef(self.rotation, 0, 0, 1)
-        glScalef(self.scale.x, self.scale.y, self.scale.z)
-        self.model.drawEntity()
+        self.model.draw()
         glPopMatrix()

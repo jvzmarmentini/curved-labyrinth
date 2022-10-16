@@ -1,8 +1,6 @@
-from collections import deque
-import itertools
 import random
-from itertools import cycle
-from typing import Deque, List, NamedTuple, Set
+from collections import deque
+from typing import Deque, NamedTuple
 
 import numpy as np
 from OpenGL.GL import *
@@ -16,8 +14,8 @@ from src.Polygon import Polygon
 
 
 class Curve(Polygon):
-    def __init__(self, *v):
-        super().__init__(*v)
+    def __init__(self, vertices):
+        super().__init__(vertices=vertices)
         self.lowNeighbours: Deque[NamedTuple[Self, int]] = deque()
         self.upNeighbours: Deque[NamedTuple[Self, int]] = deque()
         self.color = .5, .5, .5
@@ -50,3 +48,7 @@ class Curve(Polygon):
         controlPointA = self.vertices[0] * (1-t) + self.vertices[1] * t
         controlPointB = self.vertices[1] * (1-t) + self.vertices[2] * t
         return controlPointA * (1-t) + controlPointB * t
+
+    def derivative(self, t: float) -> Point:
+        p0, p1, p2 = self.vertices
+        return (p1 - p0) * 2 * (1-t) + (p2 - p1) * 2 * t

@@ -1,22 +1,24 @@
-import copy
-from typing import Tuple
+from typing import List, Tuple
 
-from multipledispatch import dispatch
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 from src.Point import *
-
+from src.BoundingBox import BoundingBox
 
 class Polygon:
-    def __init__(self, filepath: str = None, *v: Point):
-        self.vertices = []
+    def __init__(self, filepath: str = None, color: List[int] = [1, 1, 1], vertices: List[Point] = []):
+        self.vertices: List[Point] = []
         if filepath is not None:
             points = Polygon.readFromFile(filepath)
             self.vertices.extend(points)
-        if v is not None:
-            self.vertices.extend(v)
+        if vertices is not None:
+            self.vertices.extend(vertices)
+
+        self.color = color
+        bboxColor = [1 - c for c in color]
+        self.bbox = BoundingBox(*self.getLimits(), bboxColor)
 
     def __len__(self):
         return len(self.vertices)
@@ -33,41 +35,23 @@ class Polygon:
                 points.append(Point(*coord))
         return points
 
-    @dispatch(float, float)
-    def insertVertice(self, x: float, y: float) -> None:
-        self.vertices.append(Point(x, y))
-
-    @dispatch(Point)
-    def insertVertice(self, p: Point) -> None:
-        self.vertices.append(p)
-
-    def getVertice(self, i) -> Point:
-        return copy.deepcopy(self.vertices[i])
-
-    def getLimitsMin(self, scale: Point = Point(1, 1, 1)) -> Point:
+    def getLimitsMin(self) -> Point:
         assert len(self.vertices) > 0
-        return Point(min([v.x for v in self.vertices]) * scale.x,
-                     min([v.y for v in self.vertices]) * scale.y,
-                     min([v.z for v in self.vertices]) * scale.z)
+        return Point(min([v.x for v in self.vertices]),
+                     min([v.y for v in self.vertices]),
+                     min([v.z for v in self.vertices]))
 
-    def getLimitsMax(self, scale: Point = Point(1, 1, 1)) -> Point:
+    def getLimitsMax(self) -> Point:
         assert len(self.vertices) > 0
-        return Point(max([v.x for v in self.vertices]) * scale.x,
-                     max([v.y for v in self.vertices]) * scale.y,
-                     max([v.z for v in self.vertices]) * scale.z)
+        return Point(max([v.x for v in self.vertices]),
+                     max([v.y for v in self.vertices]),
+                     max([v.z for v in self.vertices]))
 
     def getLimits(self) -> Tuple[Point, Point]:
         return self.getLimitsMin(), self.getLimitsMax()
 
-    def modifyVertice(self, i, P):
-        self.vertices[i] = P
-
-    def getEdge(self, n: int) -> Point:
-        v1 = self.vertices[n]
-        v2 = self.vertices[(n+1) % len(self)]
-        return v2 - v1
-
     def draw(self):
+        glColor(*self.color)
         glBegin(GL_LINE_LOOP)
         for V in self.vertices:
             glVertex3f(V.x, V.y, V.z)
