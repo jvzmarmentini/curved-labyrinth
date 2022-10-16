@@ -1,5 +1,5 @@
-from cmath import sqrt
-import math
+from math import sqrt
+import numpy as np
 import typing
 
 from typing_extensions import Self
@@ -18,34 +18,28 @@ class Point(typing.NamedTuple):
         return Point(*[x1 + x2 for x1, x2 in zip(self, other)])
 
     def __sub__(self, other: Self) -> Self:
-        return Point(*[abs(x1) - abs(x2) for x1, x2 in zip(self, other)])
+        return Point(*[x1 - x2 for x1, x2 in zip(self, other)])
 
     def __mul__(self, other: float) -> Self:
         return Point(*[x1 * other for x1 in self])
-    
-    def dot(self, other: Self) -> Self:
-        return sum([x1 * x2 for x1,x2 in zip(self, other)])
-    
-    def magnitude(self) -> float:
-        return sqrt(sum([x ** 2 for x in self])).real
 
-    # def rotateZ(self, angulo: float) -> Self:
-    #     anguloRad = angulo * 3.14159265359/180.0
-    #     xr = self.x*math.cos(anguloRad) - self.y*math.sin(anguloRad)
-    #     yr = self.x*math.sin(anguloRad) + self.y*math.cos(anguloRad)
-    #     self.x = xr
-    #     self.y = yr
+    def dot(self, other: Self) -> float:
+        return sum([x1 * x2 for x1, x2 in zip(self, other)])
 
-    # def rotateY(self, angulo: float) -> None:
-    #     anguloRad = angulo * 3.14159265359/180.0
-    #     xr = self.x*math.cos(anguloRad) + self.z*math.sin(anguloRad)
-    #     zr = -self.x*math.sin(anguloRad) + self.z*math.cos(anguloRad)
-    #     self.x = xr
-    #     self.z = zr
+    def normalize(self) -> Self:
+        if self.x == self.y == 0:
+            return Point()
+        d = sqrt(self.x ** 2 + self.y ** 2)
+        return Point(self.x / d, self.y / d)
 
-    # def rotateX(self, angulo: float) -> None:
-    #     anguloRad = angulo * 3.14159265359/180.0
-    #     yr = self.y*math.cos(anguloRad) - self.z*math.sin(anguloRad)
-    #     zr = self.y*math.sin(anguloRad) + self.z*math.cos(anguloRad)
-    #     self.y = yr
-    #     self.z = zr
+    def translate(self, point: Self) -> Self:
+        return Point(*(self + point))
+
+    def scale(self, scale: Self) -> Self:
+        return Point(*[x1 * x2 for x1, x2 in zip(self, scale)])
+
+    def rotate(self, angle: float) -> Self:
+        theta = np.deg2rad(angle)
+        c, s = np.cos(theta), np.sin(theta)
+        rotMatrix = np.array(((c, -s), (s, c)))
+        return Point(*(rotMatrix @ self[:2]))

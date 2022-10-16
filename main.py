@@ -20,23 +20,30 @@ flagDrawAxis = False
 scene = None
 curves: List[Curve] = []
 characters: List[Character] = []
-player: Character = Character(model=Train(1, 0, 1), scale=Point(.5, .5, 1), isPlayer=True)
+player: Character = Character(
+    model=Polygon(
+        filepath="assets/cart.txt",
+        color=[1, 0, 1]
+    ),
+    scale=Point(.5, .5, 1),
+    isPlayer=True
+)
 
 
 def initCurves() -> None:
     global curves
 
     points = []
-    with open("./assets/t1.txt") as f:
+    with open("./assets/basePoints.txt") as f:
         for line in f:
             coord = list(map(float, line.split()))
             points.append(Point(*coord))
 
     refs = []
-    with open("./assets/t2.txt") as f:
+    with open("./assets/curves.txt") as f:
         for line in f:
             vertices = [points[i] for i in map(int, line.split())]
-            curve = Curve(None, *vertices)
+            curve = Curve(vertices=vertices)
             curves.append(curve)
             refs.append(line.split())
             del refs[-1][1]
@@ -62,11 +69,15 @@ def initCharacters() -> None:
     characters.append(player)
     player.trail = curves[0]
 
-    for _ in range(0):
-        enemy = Character(model=Train(0, 1, 1),
-                          scale=Point(.5, .5, 1),
-                          velocity=uniform(2.0, 4.0),
-                          t=.5)
+    for _ in range(10):
+        enemy = Character(
+            model=Polygon(
+                filepath="assets/cart.txt",
+                color=[0, 1, 1]
+            ),
+            scale=Point(.5, .5, 1),
+            velocity=uniform(2.0, 4.0),
+            t=.5)
         characters.append(enemy)
         enemy.trail = choice(curves[1:])
         enemy.direction = getrandbits(1)
@@ -77,7 +88,7 @@ def init() -> None:
 
     minPoint = Point(-6, -6, 0)
     maxPoint = Point(6, 6, 0)
-    scene = Polygon(None, minPoint, maxPoint)
+    scene = Polygon(vertices=[minPoint, maxPoint])
     initCurves()
     initCharacters()
 
@@ -108,8 +119,14 @@ def display() -> None:
     for curve in curves:
         curve.generate()
 
-    for char in characters:
+    player.draw()
+    target = player.trail
+
+    for char in characters[1:]:
         char.draw()
+        if char.trail == target:
+            if player.collided(char, True):
+                print(f"collision on {glutGet(GLUT_ELAPSED_TIME)}")
 
     glutSwapBuffers()
 
