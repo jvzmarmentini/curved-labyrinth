@@ -5,7 +5,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from src.Point import Point
+from src.models.Point import Point
 
 
 @dataclass
@@ -21,22 +21,22 @@ class BoundingBox():
         newMin = newMin.rotate(angle)
         newMin = newMin.scale(scale)
         newMin = newMin.translate(sense)
-        
+
         newMax = self.maxEdge
         newMax = newMax.rotate(angle)
         newMax = newMax.scale(scale)
         newMax = newMax.translate(sense)
-        
+
         interMax = Point(self.minEdge.x, self.maxEdge.y)
         interMax = interMax.rotate(angle)
         interMax = interMax.scale(scale)
         interMax = interMax.translate(sense)
-        
+
         interMin = Point(self.maxEdge.x, self.minEdge.y)
         interMin = interMin.rotate(angle)
         interMin = interMin.scale(scale)
         interMin = interMin.translate(sense)
-        
+
         return BoundingBox(
             newMax, newMin, self.color, interMax, interMin
         )
@@ -49,4 +49,3 @@ class BoundingBox():
         glVertex3f(*self.maxEdge)
         glVertex3f(*self.interMin)
         glEnd()
-        

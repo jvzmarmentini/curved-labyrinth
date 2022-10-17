@@ -1,8 +1,5 @@
-import math
-from operator import inv
 import random
 from collections import deque
-from turtle import right
 from typing import Deque, NamedTuple
 
 import numpy as np
@@ -11,9 +8,9 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from typing_extensions import Self
 
-from src.Drawer import Drawer
-from src.Point import Point
-from src.Polygon import Polygon
+from src.helpers.Drawer import Drawer
+from src.models.Point import Point
+from src.models.Polygon import Polygon
 
 
 class Curve(Polygon):
@@ -42,16 +39,16 @@ class Curve(Polygon):
         glBegin(GL_LINES)
         for t in np.linspace(.0, 1, num=10):
             cur = self.lerp(t)
-            tangent = self.tangent(t)
-            leftNormal = tangent.rotate(90) * .05 + cur
-            rightNormal = tangent.rotate(270) * .05 + cur
+            # tangent = self.tangent(t)
+            # leftNormal = tangent.rotate(90) * .05 + cur
+            # rightNormal = tangent.rotate(270) * .05 + cur
             if t != .0:
-                # Drawer.drawLine(prev, cur, *self.color)
-                Drawer.drawLine(leftNormal, prevLeft, *self.color)
-                Drawer.drawLine(rightNormal, prevRight, *self.color)
-            # prev = cur
-            prevLeft = leftNormal 
-            prevRight = rightNormal
+                Drawer.drawLine(prev, cur, *self.color)
+                # Drawer.drawLine(leftNormal, prevLeft, *self.color)
+                # Drawer.drawLine(rightNormal, prevRight, *self.color)
+            prev = cur
+            # prevLeft = leftNormal 
+            # prevRight = rightNormal
         glEnd()
 
     def lerp(self, t: float) -> Point:

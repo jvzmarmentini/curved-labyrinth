@@ -1,18 +1,16 @@
-from typing import NamedTuple, Tuple
-
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from src.Point import Point
-from src.Polygon import Polygon
+from src.models.Point import Point
+from src.models.Polygon import Polygon
 
 
 class Drawer():
     @staticmethod
     def drawAxis(scene: Polygon) -> None:
         minPoint, maxPoint = scene.getLimits()
-        mid = (maxPoint - minPoint) * .5
+        mid = (maxPoint + minPoint) * .5
         glLineWidth(1)
         glColor3f(1, 1, 1)
         glBegin(GL_LINES)
@@ -54,7 +52,7 @@ class Drawer():
 
     @staticmethod
     def displayTitle(string, x, y):
-        glColor3f( 0, 1, 0 )
-        glRasterPos2f( x, y )
+        glColor3f(0, 1, 0)
+        glRasterPos2f(x, y)
         for c in string:
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(c))

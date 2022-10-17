@@ -5,10 +5,10 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from src.BoundingBox import BoundingBox
-from src.Curve import Curve
-from src.Point import Point
-from src.Polygon import Polygon
+from src.models.BoundingBox import BoundingBox
+from src.models.Curve import Curve
+from src.models.Point import Point
+from src.models.Polygon import Polygon
 
 
 @dataclass
@@ -37,7 +37,8 @@ class Character:
             self.nextTrail = None
 
     def setNext(self, rot_dir):
-        self.nextTrail.curve.color = .5, .5, .5
+        if self.nextTrail is not None:
+            self.nextTrail.curve.color = .5, .5, .5
 
         if self.t <= .5 and self.direction:
             self.trail.lowNeighbours.rotate(rot_dir)

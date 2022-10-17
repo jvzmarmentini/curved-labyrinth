@@ -4,8 +4,9 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from src.Point import *
-from src.BoundingBox import BoundingBox
+from src.models.BoundingBox import BoundingBox
+from src.models.Point import Point
+
 
 class Polygon:
     def __init__(self, filepath: str = None, color: List[int] = [1, 1, 1], vertices: List[Point] = []):

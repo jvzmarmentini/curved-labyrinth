@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import argparse
-from glob import glob
 import os
 from collections import namedtuple
 from random import choice, getrandbits, uniform
@@ -10,14 +9,13 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from src.Character import Character
-from src.Curve import Curve
-from src.Drawer import Drawer
-from src.Point import Point
-from src.Polygon import Polygon
-from src.Train import Train
+from src.helpers.Drawer import Drawer
+from src.models.Character import Character
+from src.models.Curve import Curve
+from src.models.Point import Point
+from src.models.Polygon import Polygon
 
-flagDrawAxis = False
+flagDrawAxis = True
 scene: Polygon = None
 curves: List[Curve] = []
 characters: List[Character] = []
@@ -29,6 +27,11 @@ player: Character = Character(
     scale=Point(.5, .5, 1),
     isPlayer=True
 )
+
+diffEt = 0
+lastTime = 0
+framesPerSecond = 0
+displayFPS = 1
 
 
 def initCurves() -> None:
@@ -106,12 +109,6 @@ def reshape(w, h):
     glLoadIdentity()
 
 
-diffEt = 0
-lastTime = 0
-framesPerSecond = 0
-displayFPS = 1
-
-
 def display() -> None:
     global lastTime, framesPerSecond, displayFPS
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -142,8 +139,7 @@ def display() -> None:
         char.draw()
         if char.trail == player.trail:
             if player.collided(char, True):
-                pass
-                # print(f"collision on {glutGet(GLUT_ELAPSED_TIME)}")
+                print(f"collision on {glutGet(GLUT_ELAPSED_TIME)}")
 
     glutSwapBuffers()
 
