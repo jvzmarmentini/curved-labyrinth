@@ -1,5 +1,8 @@
+import math
+from operator import inv
 import random
 from collections import deque
+from turtle import right
 from typing import Deque, NamedTuple
 
 import numpy as np
@@ -37,11 +40,18 @@ class Curve(Polygon):
         Drawer.drawCoords(self.lerp(1))
         glLineWidth(2)
         glBegin(GL_LINES)
-        for t in np.linspace(.0, 1, num=40):
+        for t in np.linspace(.0, 1, num=10):
             cur = self.lerp(t)
+            tangent = self.tangent(t)
+            leftNormal = tangent.rotate(90) * .05 + cur
+            rightNormal = tangent.rotate(270) * .05 + cur
             if t != .0:
-                Drawer.drawLine(prev, cur, *self.color)
-            prev = cur
+                # Drawer.drawLine(prev, cur, *self.color)
+                Drawer.drawLine(leftNormal, prevLeft, *self.color)
+                Drawer.drawLine(rightNormal, prevRight, *self.color)
+            # prev = cur
+            prevLeft = leftNormal 
+            prevRight = rightNormal
         glEnd()
 
     def lerp(self, t: float) -> Point:
@@ -52,3 +62,6 @@ class Curve(Polygon):
     def derivative(self, t: float) -> Point:
         p0, p1, p2 = self.vertices
         return (p1 - p0) * 2 * (1-t) + (p2 - p1) * 2 * t
+    
+    def tangent(self, t: float) -> Point:
+        return self.derivative(t).normalize()

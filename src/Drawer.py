@@ -53,14 +53,8 @@ class Drawer():
         glEnd()
 
     @staticmethod
-    def drawBBox(bbox, *color):
-        if bbox is None:
-            return
-        if color is not None:
-            glColor3f(*color)
-        glBegin(GL_LINE_LOOP)
-        glVertex3f(*bbox.min)
-        glVertex3f(bbox.min.x, bbox.max.y, 0)
-        glVertex3f(*bbox.max)
-        glVertex3f(bbox.max.x, bbox.min.y, 0)
-        glEnd()
+    def displayTitle(string, x, y):
+        glColor3f( 0, 1, 0 )
+        glRasterPos2f( x, y )
+        for c in string:
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(c))

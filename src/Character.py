@@ -55,7 +55,7 @@ class Character:
         self.t = self.direction
 
     def animate(self, delta):
-        delta /= self.velocity * 1000
+        delta /= self.velocity
 
         if self.direction:
             self.t -= delta

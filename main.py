@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import argparse
+from glob import glob
 import os
 from collections import namedtuple
 from random import choice, getrandbits, uniform
@@ -17,7 +18,7 @@ from src.Polygon import Polygon
 from src.Train import Train
 
 flagDrawAxis = False
-scene = None
+scene: Polygon = None
 curves: List[Curve] = []
 characters: List[Character] = []
 player: Character = Character(
@@ -105,9 +106,25 @@ def reshape(w, h):
     glLoadIdentity()
 
 
+diffEt = 0
+lastTime = 0
+framesPerSecond = 0
+displayFPS = 1
+
+
 def display() -> None:
+    global lastTime, framesPerSecond, displayFPS
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
+
+    currentTime = glutGet(GLUT_ELAPSED_TIME) * .001
+    framesPerSecond += 1
+    if currentTime - lastTime > 1.:
+        lastTime = currentTime
+        displayFPS = framesPerSecond
+        framesPerSecond = 0
+    sceneMin, sceneMax = scene.getLimits()
+    Drawer.displayTitle(f"FPS: {displayFPS}", sceneMin.x+.3, sceneMax.y-.3)
 
     player.trail.color = 1, 0, 1
     if player.nextTrail is not None:
@@ -120,23 +137,20 @@ def display() -> None:
         curve.generate()
 
     player.draw()
-    target = player.trail
 
     for char in characters[1:]:
         char.draw()
-        if char.trail == target:
+        if char.trail == player.trail:
             if player.collided(char, True):
-                print(f"collision on {glutGet(GLUT_ELAPSED_TIME)}")
+                pass
+                # print(f"collision on {glutGet(GLUT_ELAPSED_TIME)}")
 
     glutSwapBuffers()
 
 
-diffEt = 0
-
-
 def animate():
     global diffEt
-    et = glutGet(GLUT_ELAPSED_TIME)
+    et = glutGet(GLUT_ELAPSED_TIME) * .001
 
     for char in characters:
         char.animate(et - diffEt)
