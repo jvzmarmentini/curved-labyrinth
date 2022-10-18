@@ -43,3 +43,8 @@ class Point(typing.NamedTuple):
         c, s = np.cos(theta), np.sin(theta)
         rotMatrix = np.array(((c, -s), (s, c)))
         return Point(*(rotMatrix @ self[:2]))
+    
+    def apply(self, angle, scale, sense):
+        point = self.rotate(angle)
+        point = point.scale(scale)
+        return point.translate(sense)

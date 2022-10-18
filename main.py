@@ -3,18 +3,21 @@ import argparse
 import os
 from collections import namedtuple
 from random import choice, getrandbits, uniform
+from time import sleep
 from typing import List
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
+import src.helpers.settings as settings
 from src.helpers.Drawer import Drawer
 from src.models.Character import Character
 from src.models.Curve import Curve
 from src.models.Point import Point
 from src.models.Polygon import Polygon
 
+pause = False
 flagDrawAxis = True
 scene: Polygon = None
 curves: List[Curve] = []
@@ -73,7 +76,7 @@ def initCharacters() -> None:
     characters.append(player)
     player.trail = curves[0]
 
-    for _ in range(10):
+    for _ in range(0):
         enemy = Character(
             model=Polygon(
                 filepath="assets/cart.txt",
@@ -121,24 +124,25 @@ def display() -> None:
         displayFPS = framesPerSecond
         framesPerSecond = 0
     sceneMin, sceneMax = scene.getLimits()
-    Drawer.displayTitle(f"FPS: {displayFPS}", sceneMin.x+.3, sceneMax.y-.3)
 
+    if settings._debugger:
+        Drawer.displayTitle(f"FPS: {displayFPS}", sceneMin.x+.3, sceneMax.y-.3)
+        Drawer.drawAxis(scene)
+        
     player.trail.color = 1, 0, 1
     if player.nextTrail is not None:
         player.nextTrail.curve.color = 1, 1, 0
-
-    if flagDrawAxis:
-        Drawer.drawAxis(scene)
 
     for curve in curves:
         curve.generate()
 
     player.draw()
+    player.bbox()
 
     for char in characters[1:]:
         char.draw()
         if char.trail == player.trail:
-            if player.collided(char, True):
+            if player.collided(char):
                 print(f"collision on {glutGet(GLUT_ELAPSED_TIME)}")
 
     glutSwapBuffers()
@@ -161,6 +165,9 @@ def keyboard(key: bytes, x, y) -> None:
         os._exit(0)
     if key == b' ':
         player.invertDirection()
+    if key == b'p':
+        global pause
+        pause = not pause
 
     glutPostRedisplay()
 
@@ -176,7 +183,10 @@ def arrow_keys(a_keys: int, x, y) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action=argparse.BooleanOptionalAction, default=False)
     args = parser.parse_args()
+    
+    settings.init(args.debug)
 
     glutInit()
     glutInitDisplayMode(GLUT_RGBA)

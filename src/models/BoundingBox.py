@@ -16,26 +16,14 @@ class BoundingBox():
     interMax: Point = Point()
     interMin: Point = Point()
 
-    def transformations(self, angle: float, scale: Point, sense: Point):
-        newMin = self.minEdge
-        newMin = newMin.rotate(angle)
-        newMin = newMin.scale(scale)
-        newMin = newMin.translate(sense)
+    def transformations(self, angle: float = .0, scale: Point = Point(1,1,1), sense: Point = Point()):
+        newMin = self.minEdge.apply(angle,scale,sense)
 
-        newMax = self.maxEdge
-        newMax = newMax.rotate(angle)
-        newMax = newMax.scale(scale)
-        newMax = newMax.translate(sense)
+        newMax = self.maxEdge.apply(angle,scale,sense)
 
-        interMax = Point(self.minEdge.x, self.maxEdge.y)
-        interMax = interMax.rotate(angle)
-        interMax = interMax.scale(scale)
-        interMax = interMax.translate(sense)
+        interMax = Point(self.minEdge.x, self.maxEdge.y).apply(angle,scale,sense)
 
-        interMin = Point(self.maxEdge.x, self.minEdge.y)
-        interMin = interMin.rotate(angle)
-        interMin = interMin.scale(scale)
-        interMin = interMin.translate(sense)
+        interMin = Point(self.maxEdge.x, self.minEdge.y).apply(angle,scale,sense)
 
         return BoundingBox(
             newMax, newMin, self.color, interMax, interMin
@@ -45,7 +33,9 @@ class BoundingBox():
         glColor(*self.color)
         glBegin(GL_LINE_LOOP)
         glVertex3f(*self.minEdge)
-        glVertex3f(*self.interMax)
+        glVertex3f(self.minEdge.x, self.maxEdge.y, 0)
+        # glVertex3f(*self.interMax)
         glVertex3f(*self.maxEdge)
-        glVertex3f(*self.interMin)
+        glVertex3f(self.maxEdge.x, self.minEdge.y, 0)
+        # glVertex3f(*self.interMin)
         glEnd()

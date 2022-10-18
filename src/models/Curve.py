@@ -8,6 +8,7 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from typing_extensions import Self
 
+import src.helpers.settings as settings
 from src.helpers.Drawer import Drawer
 from src.models.Point import Point
 from src.models.Polygon import Polygon
@@ -33,15 +34,16 @@ class Curve(Polygon):
         return random.choice(list(self.upNeighbours))
 
     def generate(self) -> None:
-        Drawer.drawCoords(self.lerp(0))
-        Drawer.drawCoords(self.lerp(1))
+        if settings._debugger:
+            Drawer.drawCoords(self.lerp(0))
+            Drawer.drawCoords(self.lerp(1))
         glLineWidth(2)
         glBegin(GL_LINES)
         for t in np.linspace(.0, 1, num=10):
             cur = self.lerp(t)
             # tangent = self.tangent(t)
-            # leftNormal = tangent.rotate(90) * .05 + cur
-            # rightNormal = tangent.rotate(270) * .05 + cur
+            # leftNormal = tangent.rotate(90) * .1 + cur
+            # rightNormal = tangent.rotate(270) * .1 + cur
             if t != .0:
                 Drawer.drawLine(prev, cur, *self.color)
                 # Drawer.drawLine(leftNormal, prevLeft, *self.color)

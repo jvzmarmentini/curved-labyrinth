@@ -50,6 +50,9 @@ class Polygon:
 
     def getLimits(self) -> Tuple[Point, Point]:
         return self.getLimitsMin(), self.getLimitsMax()
+    
+    def updateVertices(self, angle, scale, sense):
+        return Polygon(color=[1,.5,0],vertices=[x.apply(angle,scale,sense) for x in self.vertices])
 
     def draw(self):
         glColor(*self.color)

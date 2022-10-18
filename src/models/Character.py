@@ -5,6 +5,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
+import src.helpers.settings as settings
 from src.models.BoundingBox import BoundingBox
 from src.models.Curve import Curve
 from src.models.Point import Point
@@ -91,22 +92,21 @@ class Character:
         if callable(animate):
             animate()
 
-    def bbox(self, drawFlag: bool = False) -> BoundingBox:
+    def bbox(self) -> BoundingBox:
         bbox = self.model.bbox.transformations(
             self.rotation, self.scale, self.position
         )
-        if drawFlag:
-            self.drawBBox(bbox)
+        # if settings._debugger:
+        #     self.drawBBox(bbox)
         return bbox
 
-    def collided(self, other: BoundingBox, drawFlag) -> bool:
+    def collided(self, other: BoundingBox) -> bool:
         # TODO: not working properly
-        bbox = self.bbox(drawFlag)
-        charBBox = other.bbox(drawFlag)
-        return bbox.minEdge.x <= charBBox.minEdge.x and \
-            bbox.maxEdge.x >= charBBox.maxEdge.x and \
-            bbox.minEdge.y <= charBBox.minEdge.y and \
-            bbox.maxEdge.y >= charBBox.maxEdge.y
+        bbox = self.bbox()
+        charBBox = other.bbox()
+        collisionOnX = charBBox.minEdge.x <= bbox.maxEdge.x and charBBox.maxEdge.x >= bbox.minEdge.x
+        collisionOnY = charBBox.minEdge.y <= bbox.maxEdge.y and charBBox.maxEdge.y >= bbox.minEdge.y
+        return collisionOnX and collisionOnY
 
     def drawBBox(self, bbox: BoundingBox):
         glPushMatrix()
@@ -114,9 +114,6 @@ class Character:
         glPopMatrix()
 
     def draw(self):
-        glPushMatrix()
-        glTranslatef(*self.position)
-        glScalef(*self.scale)
-        glRotatef(self.rotation, 0, 0, 1)
-        self.model.draw()
-        glPopMatrix()
+        poly = self.model.updateVertices(self.rotation, self.scale, self.position)
+        poly.bbox.draw()
+        poly.draw()
