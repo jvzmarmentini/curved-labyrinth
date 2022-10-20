@@ -23,7 +23,7 @@ class Character:
 
     t: float = .0
     direction: int = 0
-    velocity: float = 1.
+    velocity: float = 2.
 
     trail: Curve = None
     nextTrail = None
@@ -56,8 +56,8 @@ class Character:
         self.nextTrail = None
         self.t = self.direction
 
-    def animate(self, delta):
-        delta /= self.velocity
+    def animate(self, time):
+        delta = self.velocity * time / self.trail.length
 
         if self.direction:
             self.t -= delta
@@ -76,44 +76,34 @@ class Character:
         self.position = self.trail.lerp(self.t)
 
         self.updateModel()
+        self.updateRotation()
+        # updateVertices()
+        # updateAABB()
+
+    def updateModel(self):
+        animate = getattr(self.model, "animate", None)
+        if callable(animate):
+            animate()
 
     def updateRotation(self) -> float:
         sense = self.position - self.prevPos
         norm = sense.normalize()
         angle = np.rad2deg(np.arccos(norm.y))
-        if norm.x > 0:
-            angle = 360 - angle
-        self.rotation = angle
-
-    def updateModel(self):
-        self.updateRotation()
-
-        animate = getattr(self.model, "animate", None)
-        if callable(animate):
-            animate()
-
-    def bbox(self) -> BoundingBox:
-        bbox = self.model.bbox.transformations(
-            self.rotation, self.scale, self.position
-        )
-        # if settings._debugger:
-        #     self.drawBBox(bbox)
-        return bbox
+        self.rotation = angle if norm.x <= 0 else 360 - angle
 
     def collided(self, other: BoundingBox) -> bool:
         # TODO: not working properly
-        bbox = self.bbox()
-        charBBox = other.bbox()
+        bbox = self.model.bbox
+        if settings._debugger:
+            bbox.draw()
+        charBBox = other.model.bbox
+        if settings._debugger:
+            charBBox.draw()
         collisionOnX = charBBox.minEdge.x <= bbox.maxEdge.x and charBBox.maxEdge.x >= bbox.minEdge.x
         collisionOnY = charBBox.minEdge.y <= bbox.maxEdge.y and charBBox.maxEdge.y >= bbox.minEdge.y
         return collisionOnX and collisionOnY
 
-    def drawBBox(self, bbox: BoundingBox):
-        glPushMatrix()
-        bbox.draw()
-        glPopMatrix()
-
     def draw(self):
-        poly = self.model.updateVertices(self.rotation, self.scale, self.position)
-        poly.bbox.draw()
+        poly = self.model.updateVertices(
+            self.rotation, self.scale, self.position)
         poly.draw()

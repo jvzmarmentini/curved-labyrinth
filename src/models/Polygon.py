@@ -18,8 +18,7 @@ class Polygon:
             self.vertices.extend(vertices)
 
         self.color = color
-        bboxColor = [1 - c for c in color]
-        self.bbox = BoundingBox(*self.getLimits(), bboxColor)
+        self.bbox = BoundingBox(*self.getLimits(), [1 - c for c in color])
 
     def __len__(self):
         return len(self.vertices)
@@ -52,11 +51,12 @@ class Polygon:
         return self.getLimitsMin(), self.getLimitsMax()
     
     def updateVertices(self, angle, scale, sense):
-        return Polygon(color=[1,.5,0],vertices=[x.apply(angle,scale,sense) for x in self.vertices])
+        poly = Polygon(color=self.color,vertices=[x.apply(angle,scale,sense) for x in self.vertices])
+        self.bbox = poly.bbox
+        return poly
 
     def draw(self):
         glColor(*self.color)
         glBegin(GL_LINE_LOOP)
-        for V in self.vertices:
-            glVertex3f(V.x, V.y, V.z)
+        [glVertex3f(v.x, v.y, v.z) for v in self.vertices]
         glEnd()

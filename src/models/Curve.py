@@ -15,17 +15,25 @@ from src.models.Polygon import Polygon
 
 
 class Curve(Polygon):
+    _steps = 15
+    
     def __init__(self, vertices):
         super().__init__(vertices=vertices)
         self.lowNeighbours: Deque[NamedTuple[Self, int]] = deque()
         self.upNeighbours: Deque[NamedTuple[Self, int]] = deque()
         self.color = .5, .5, .5
+        
+        self.length = 0
 
     def __len__(self) -> int:
         return len(self.curvePoints)
-
-    def __str__(self) -> str:
-        return f"Curve={id(self)}, OnRails={list(map(str,self.charsOnRails))}"
+    
+    @property
+    def steps(self):
+        return self.__class__._steps
+    @steps.setter
+    def steps(self, value):
+        self.__class__._steps = value
 
     def randLowNeighbours(self):
         return random.choice(list(self.lowNeighbours))
@@ -39,18 +47,14 @@ class Curve(Polygon):
             Drawer.drawCoords(self.lerp(1))
         glLineWidth(2)
         glBegin(GL_LINES)
-        for t in np.linspace(.0, 1, num=10):
+        totalLength = 0
+        for t in np.linspace(.0, 1, num=self._steps):
             cur = self.lerp(t)
-            # tangent = self.tangent(t)
-            # leftNormal = tangent.rotate(90) * .1 + cur
-            # rightNormal = tangent.rotate(270) * .1 + cur
             if t != .0:
                 Drawer.drawLine(prev, cur, *self.color)
-                # Drawer.drawLine(leftNormal, prevLeft, *self.color)
-                # Drawer.drawLine(rightNormal, prevRight, *self.color)
+                totalLength += Point.dist(cur, prev)
             prev = cur
-            # prevLeft = leftNormal 
-            # prevRight = rightNormal
+        self.length = totalLength
         glEnd()
 
     def lerp(self, t: float) -> Point:

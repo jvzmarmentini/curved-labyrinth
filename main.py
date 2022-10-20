@@ -3,7 +3,6 @@ import argparse
 import os
 from collections import namedtuple
 from random import choice, getrandbits, uniform
-from time import sleep
 from typing import List
 
 from OpenGL.GL import *
@@ -17,17 +16,16 @@ from src.models.Curve import Curve
 from src.models.Point import Point
 from src.models.Polygon import Polygon
 
-pause = False
 flagDrawAxis = True
 scene: Polygon = None
 curves: List[Curve] = []
 characters: List[Character] = []
 player: Character = Character(
     model=Polygon(
-        filepath="assets/cart.txt",
+        filepath="assets/player.txt",
         color=[1, 0, 1]
     ),
-    scale=Point(.5, .5, 1),
+    scale=Point(.25, .25, 1),
     isPlayer=True
 )
 
@@ -76,14 +74,14 @@ def initCharacters() -> None:
     characters.append(player)
     player.trail = curves[0]
 
-    for _ in range(0):
+    for _ in range(10):
         enemy = Character(
             model=Polygon(
                 filepath="assets/cart.txt",
                 color=[0, 1, 1]
             ),
-            scale=Point(.5, .5, 1),
-            velocity=uniform(2.0, 4.0),
+            scale=Point(.25, .25, 1),
+            velocity=uniform(1.0, 2.0),
             t=.5)
         characters.append(enemy)
         enemy.trail = choice(curves[1:])
@@ -137,7 +135,6 @@ def display() -> None:
         curve.generate()
 
     player.draw()
-    player.bbox()
 
     for char in characters[1:]:
         char.draw()
@@ -165,10 +162,13 @@ def keyboard(key: bytes, x, y) -> None:
         os._exit(0)
     if key == b' ':
         player.invertDirection()
-    if key == b'p':
-        global pause
-        pause = not pause
-
+    if key == b'q':
+        player.pause()
+    if key == b']':
+        player.trail.steps += 1
+    if key == b'[':
+        player.trail.steps -= 1
+        
     glutPostRedisplay()
 
 
@@ -201,10 +201,10 @@ def main() -> None:
     glutKeyboardFunc(keyboard)
     glutSpecialFunc(arrow_keys)
 
-    # try:
-    glutMainLoop()
-    # except SystemExit:
-    #     pass
+    try:
+        glutMainLoop()
+    except SystemExit:
+        pass
 
 
 if __name__ == '__main__':

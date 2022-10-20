@@ -48,3 +48,7 @@ class Point(typing.NamedTuple):
         point = self.rotate(angle)
         point = point.scale(scale)
         return point.translate(sense)
+    
+    @staticmethod
+    def dist(a: Self, b: Self):
+        return sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
