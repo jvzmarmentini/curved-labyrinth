@@ -1,6 +1,7 @@
+from dataclasses import dataclass, field
 import random
 from collections import deque
-from typing import Deque, NamedTuple
+from typing import Deque, List, Tuple
 
 import numpy as np
 from OpenGL.GL import *
@@ -14,19 +15,15 @@ from src.models.Point import Point
 from src.models.Polygon import Polygon
 
 
+@dataclass
 class Curve(Polygon):
     _steps = 15
     
-    def __init__(self, vertices):
-        super().__init__(vertices=vertices)
-        self.lowNeighbours: Deque[NamedTuple[Self, int]] = deque()
-        self.upNeighbours: Deque[NamedTuple[Self, int]] = deque()
-        self.color = .5, .5, .5
-        
-        self.length = 0
-
-    def __len__(self) -> int:
-        return len(self.curvePoints)
+    startNeighbours: Deque[Tuple[Self, int]] = field(default_factory=deque)
+    endNeighbours: Deque[Tuple[Self, int]] = field(default_factory=list)
+    color: List[int] = field(default_factory=lambda: [.5, .5, .5])
+    
+    length: float = 0
     
     @property
     def steps(self):
@@ -35,11 +32,11 @@ class Curve(Polygon):
     def steps(self, value):
         self.__class__._steps = value
 
-    def randLowNeighbours(self):
-        return random.choice(list(self.lowNeighbours))
+    def randStartNeighbours(self):
+        return random.choice(list(self.startNeighbours))
 
-    def randUpNeighbours(self):
-        return random.choice(list(self.upNeighbours))
+    def randEndNeighbours(self):
+        return random.choice(list(self.endNeighbours))
 
     def generate(self) -> None:
         if settings._debugger:

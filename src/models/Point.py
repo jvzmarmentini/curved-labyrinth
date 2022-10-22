@@ -39,15 +39,18 @@ class Point(typing.NamedTuple):
         return Point(*[x1 * x2 for x1, x2 in zip(self, scale)])
 
     def rotate(self, angle: float) -> Self:
+        """Rotate the point N degrees relative to the Y canonical 3D vector (0, 1, 0)
+
+        Args:
+            angle (float): Rotation angle (in degrees)
+
+        Returns:
+            Self: A new rotated Point object
+        """
         theta = np.deg2rad(angle)
         c, s = np.cos(theta), np.sin(theta)
         rotMatrix = np.array(((c, -s), (s, c)))
         return Point(*(rotMatrix @ self[:2]))
-    
-    def apply(self, angle, scale, sense):
-        point = self.rotate(angle)
-        point = point.scale(scale)
-        return point.translate(sense)
     
     @staticmethod
     def dist(a: Self, b: Self):

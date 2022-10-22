@@ -13,14 +13,10 @@ class BoundingBox():
     maxEdge: Point
     minEdge: Point
     color: List[float]
-
-    def transformations(self, angle: float = .0, scale: Point = Point(1,1,1), sense: Point = Point()):
-        newMin = self.minEdge.apply(angle,scale,sense)
-        newMax = self.maxEdge.apply(angle,scale,sense)
-
-        return BoundingBox(
-            newMax, newMin, self.color
-        )
+    
+    def update(self, maxEdge: Point, minEdge: Point):
+        self.maxEdge = maxEdge
+        self.minEdge = minEdge
 
     def draw(self):
         glColor(*self.color)

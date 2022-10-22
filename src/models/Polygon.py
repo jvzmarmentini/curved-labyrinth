@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from typing import List, Tuple
 
 from OpenGL.GL import *
@@ -8,17 +9,22 @@ from src.models.BoundingBox import BoundingBox
 from src.models.Point import Point
 
 
+@dataclass
 class Polygon:
-    def __init__(self, filepath: str = None, color: List[int] = [1, 1, 1], vertices: List[Point] = []):
-        self.vertices: List[Point] = []
-        if filepath is not None:
-            points = Polygon.readFromFile(filepath)
-            self.vertices.extend(points)
-        if vertices is not None:
-            self.vertices.extend(vertices)
+    vertices: List[Point] = field(default_factory=list)
+    filepath: str = None
+    color: List[int] = field(default_factory=lambda: [1, 1, 1])
 
-        self.color = color
-        self.bbox = BoundingBox(*self.getLimits(), [1 - c for c in color])
+    def __post_init__(self):
+        if self.filepath is not None:
+            self.extendFromFile()
+        self.bbox = BoundingBox(*self.getLimits(), [1 - c for c in self.color])
+
+    def __iter__(self):
+        return iter(self.vertices)
+
+    def __getitem__(self, item):
+        return self.vertices[item]
 
     def __len__(self):
         return len(self.vertices)
@@ -26,34 +32,38 @@ class Polygon:
     def __str__(self) -> str:
         return '\n'.join([str(x) for x in self.vertices])
 
-    @staticmethod
-    def readFromFile(filepath: str):
-        points = []
-        with open(filepath) as f:
-            for line in f:
-                coord = list(map(float, line.split()))
-                points.append(Point(*coord))
-        return points
+    def extendFromFile(self) -> None:
+        with open(self.filepath) as f:
+            self.vertices.extend(
+                [Point(*map(float, line.split())) for line in f]
+            )
 
     def getLimitsMin(self) -> Point:
-        assert len(self.vertices) > 0
-        return Point(min([v.x for v in self.vertices]),
-                     min([v.y for v in self.vertices]),
-                     min([v.z for v in self.vertices]))
+        assert len(self) > 0
+        return Point(min([v.x for v in self]),
+                     min([v.y for v in self]),
+                     min([v.z for v in self]))
 
     def getLimitsMax(self) -> Point:
-        assert len(self.vertices) > 0
-        return Point(max([v.x for v in self.vertices]),
-                     max([v.y for v in self.vertices]),
-                     max([v.z for v in self.vertices]))
+        assert len(self) > 0
+        return Point(max([v.x for v in self]),
+                     max([v.y for v in self]),
+                     max([v.z for v in self]))
 
     def getLimits(self) -> Tuple[Point, Point]:
         return self.getLimitsMin(), self.getLimitsMax()
-    
-    def updateVertices(self, angle, scale, sense):
-        poly = Polygon(color=self.color,vertices=[x.apply(angle,scale,sense) for x in self.vertices])
-        self.bbox = poly.bbox
-        return poly
+
+    def scale(self, scale: Point = Point(1, 1, 1)):
+        self.vertices = [v.scale(scale) for v in self]
+
+    def translate(self, sense: Point = Point()):
+        self.vertices = [v.translate(sense) for v in self]
+
+    def rotate(self, angle: float = 0):
+        self.vertices = [v.rotate(angle) for v in self]
+
+    def updateBBox(self):
+        self.bbox.update(*self.getLimits())
 
     def draw(self):
         glColor(*self.color)
