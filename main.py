@@ -23,7 +23,7 @@ curves: List[Curve] = []
 characters: List[Character] = []
 player: Character = Character(
     model=Polygon(
-        filepath="assets/player.txt",
+        filepath="assets/models/player.txt",
         color=[1, 0, 1]
     ),
     scale=Point(.25, .25, 1)
@@ -40,7 +40,7 @@ def initCurves() -> None:
     global curves
 
     refs = []
-    with open("./assets/curves.txt") as f:
+    with open("./assets/curve/curves.txt") as f:
         for line in f:
             curves.append(Curve([scene[i] for i in map(int, line.split())]))
             refs.append(line.split())
@@ -70,7 +70,7 @@ def initCharacters() -> None:
         characters.append(
             Character(
                 model=Polygon(
-                    filepath="assets/cart.txt",
+                    filepath="assets/models/enemy.txt",
                     color=[0, 1, 1]
                 ),
                 scale=Point(.25, .25, 1),
@@ -84,7 +84,7 @@ def initCharacters() -> None:
 def init() -> None:
     global scene
 
-    with open("./assets/basePoints.txt") as f:
+    with open("./assets/curve/points.txt") as f:
         scene = Polygon(
             vertices=[Point(*(map(float, line.split()))) for line in f]
         )
