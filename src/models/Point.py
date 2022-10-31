@@ -28,7 +28,7 @@ class Point(typing.NamedTuple):
 
     def normalize(self) -> Self:
         if self.x == self.y == 0:
-            return Point()
+            return self
         d = sqrt(self.x ** 2 + self.y ** 2)
         return Point(self.x / d, self.y / d)
 
@@ -39,7 +39,19 @@ class Point(typing.NamedTuple):
         return Point(*[x1 * x2 for x1, x2 in zip(self, scale)])
 
     def rotate(self, angle: float) -> Self:
+        """Rotate the point N degrees relative to the Y canonical 3D vector (0, 1, 0)
+
+        Args:
+            angle (float): Rotation angle (in degrees)
+
+        Returns:
+            Self: A new rotated Point object
+        """
         theta = np.deg2rad(angle)
         c, s = np.cos(theta), np.sin(theta)
         rotMatrix = np.array(((c, -s), (s, c)))
         return Point(*(rotMatrix @ self[:2]))
+    
+    @staticmethod
+    def dist(a: Self, b: Self):
+        return sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)

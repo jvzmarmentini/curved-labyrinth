@@ -2,8 +2,8 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from src.Point import Point
-from src.Polygon import Polygon
+from models.Point import Point
+from models.Polygon import Polygon
 
 
 class Windmill(Polygon):

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
-from glob import glob
+from audioop import maxpp
 import os
-from collections import namedtuple
 from random import choice, getrandbits, uniform
 from typing import List
 
@@ -10,86 +9,84 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from src.Character import Character
-from src.Curve import Curve
-from src.Drawer import Drawer
-from src.Point import Point
-from src.Polygon import Polygon
-from src.Train import Train
+import src.helpers.settings as settings
+from src.helpers.Drawer import Drawer
+from src.models.Character import Character
+from src.models.Curve import Curve
+from src.models.Point import Point
+from src.models.Polygon import Polygon
 
-flagDrawAxis = False
+NUM_OF_ENEMIES = 10
+
 scene: Polygon = None
 curves: List[Curve] = []
 characters: List[Character] = []
 player: Character = Character(
     model=Polygon(
-        filepath="assets/cart.txt",
-        color=[1, 0, 1]
+        filepath="assets/models/player.txt",
+        color=[1, 0, 0]
     ),
-    scale=Point(.5, .5, 1),
-    isPlayer=True
+    scale=Point(.15, .15, 1)
 )
+
+diffEt = 0
+lastTime = 0
+framesPerSecond = 0
+displayFPS = 1
+pause = True
 
 
 def initCurves() -> None:
     global curves
 
-    points = []
-    with open("./assets/basePoints.txt") as f:
-        for line in f:
-            coord = list(map(float, line.split()))
-            points.append(Point(*coord))
-
     refs = []
-    with open("./assets/curves.txt") as f:
+    with open("./assets/curve/curves.txt") as f:
         for line in f:
-            vertices = [points[i] for i in map(int, line.split())]
-            curve = Curve(vertices=vertices)
-            curves.append(curve)
+            curves.append(Curve([scene[i] for i in map(int, line.split())]))
             refs.append(line.split())
-            del refs[-1][1]
 
-    for ref, curve in zip(refs, curves):
-        for ref2, curve2 in zip(refs, curves):
-            if curve == curve2:
+    for ref, looking in zip(refs, curves):
+        for ref2, neighbour in zip(refs, curves):
+            if looking is neighbour:
                 continue
-            Path = namedtuple("Path", "curve invert")
             if ref[0] == ref2[0]:
-                curve.lowNeighbours.append(Path(curve2, 1))
-            if ref[0] == ref2[1]:
-                curve.lowNeighbours.append(Path(curve2, 0))
-            if ref[1] == ref2[0]:
-                curve.upNeighbours.append(Path(curve2, 0))
-            if ref[1] == ref2[1]:
-                curve.upNeighbours.append(Path(curve2, 1))
+                looking.startNeighbours.append((neighbour, False))
+            if ref[0] == ref2[2]:
+                looking.startNeighbours.append((neighbour, True))
+            if ref[2] == ref2[0]:
+                looking.endNeighbours.append((neighbour, True))
+            if ref[2] == ref2[2]:
+                looking.endNeighbours.append((neighbour, False))
 
 
 def initCharacters() -> None:
     global characters
+    characters.clear()
 
     characters.append(player)
     player.trail = curves[0]
 
-    for _ in range(10):
-        enemy = Character(
-            model=Polygon(
-                filepath="assets/cart.txt",
-                color=[0, 1, 1]
-            ),
-            scale=Point(.5, .5, 1),
-            velocity=uniform(2.0, 4.0),
-            t=.5)
-        characters.append(enemy)
-        enemy.trail = choice(curves[1:])
-        enemy.direction = getrandbits(1)
+    for _ in range(NUM_OF_ENEMIES):
+        characters.append(
+            Character(
+                model=Polygon(
+                    filepath="assets/models/enemy.txt"
+                ),
+                scale=Point(.15, .15, 1),
+                velocity=uniform(1.0, 2.0),
+                sense=getrandbits(1),
+                trail=choice(curves[1:]),
+                t=.5)
+        )
 
 
 def init() -> None:
     global scene
 
-    minPoint = Point(-6, -6, 0)
-    maxPoint = Point(6, 6, 0)
-    scene = Polygon(vertices=[minPoint, maxPoint])
+    with open("./assets/curve/points.txt") as f:
+        scene = Polygon(
+            vertices=[Point(*(map(float, line.split()))) for line in f]
+        )
     initCurves()
     initCharacters()
 
@@ -97,7 +94,7 @@ def init() -> None:
 def reshape(w, h):
     minPoint, maxPoint = scene.getLimits()
 
-    glViewport(minPoint.x, minPoint.y, w, h)
+    glViewport(int(minPoint.x), int(minPoint.y), w, h)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glOrtho(minPoint.x, maxPoint.x,
@@ -106,15 +103,11 @@ def reshape(w, h):
     glLoadIdentity()
 
 
-diffEt = 0
-lastTime = 0
-framesPerSecond = 0
-displayFPS = 1
-
-
 def display() -> None:
-    global lastTime, framesPerSecond, displayFPS
+    global lastTime, framesPerSecond, displayFPS, pause
+    glClearColor(.0, .0, .0, .0)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
     glLoadIdentity()
 
     currentTime = glutGet(GLUT_ELAPSED_TIME) * .001
@@ -124,26 +117,30 @@ def display() -> None:
         displayFPS = framesPerSecond
         framesPerSecond = 0
     sceneMin, sceneMax = scene.getLimits()
-    Drawer.displayTitle(f"FPS: {displayFPS}", sceneMin.x+.3, sceneMax.y-.3)
-
-    player.trail.color = 1, 0, 1
-    if player.nextTrail is not None:
-        player.nextTrail.curve.color = 1, 1, 0
-
-    if flagDrawAxis:
+    if settings._debugger:
+        Drawer.displayTitle(f"FPS: {displayFPS}", sceneMin.x+.3, sceneMax.y-.3)
         Drawer.drawAxis(scene)
+
+    if pause:
+        Drawer.displayTitle(f"Pause", sceneMax.x-.8, sceneMax.y-.3)
+
+    player.trail.color = .5, 1, .5
+    player.trail.width = 2
+    if player.nextTrail is not None:
+        player.nextTrail[0].color = .5, .5, 1
+        player.nextTrail[0].width = 4
 
     for curve in curves:
         curve.generate()
 
-    player.draw()
+    player.display()
 
     for char in characters[1:]:
-        char.draw()
-        if char.trail == player.trail:
-            if player.collided(char, True):
-                pass
-                # print(f"collision on {glutGet(GLUT_ELAPSED_TIME)}")
+        char.display()
+        if player.collided(char):
+            pause = True
+            Drawer.displayTitle(f"You lost ):", (sceneMax.x +
+                                sceneMin.x) / 2 - .55, sceneMax.y - .3)
 
     glutSwapBuffers()
 
@@ -153,7 +150,7 @@ def animate():
     et = glutGet(GLUT_ELAPSED_TIME) * .001
 
     for char in characters:
-        char.animate(et - diffEt)
+        char.animate((et - diffEt) * (not pause))
 
     diffEt = et
 
@@ -163,8 +160,17 @@ def animate():
 def keyboard(key: bytes, x, y) -> None:
     if key == b'q' or key == b'\x1b':
         os._exit(0)
-    if key == b' ':
+    if key == b'b':
         player.invertDirection()
+    if key == b' ':
+        player.handbreak = not player.handbreak
+    if key == b'p':
+        global pause
+        pause = not pause
+    if key == b']':
+        player.trail.steps += 1
+    if key == b'[':
+        player.trail.steps -= 1
 
     glutPostRedisplay()
 
@@ -180,7 +186,11 @@ def arrow_keys(a_keys: int, x, y) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--debug', action=argparse.BooleanOptionalAction, default=False)
     args = parser.parse_args()
+
+    settings.init(args.debug)
 
     glutInit()
     glutInitDisplayMode(GLUT_RGBA)
@@ -190,15 +200,18 @@ def main() -> None:
     glutDisplayFunc(display)
     glutIdleFunc(animate)
     init()
+    
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     glutReshapeFunc(reshape)
     glutKeyboardFunc(keyboard)
     glutSpecialFunc(arrow_keys)
 
-    # try:
-    glutMainLoop()
-    # except SystemExit:
-    #     pass
+    try:
+        glutMainLoop()
+    except SystemExit:
+        pass
 
 
 if __name__ == '__main__':
