@@ -147,7 +147,7 @@ def display() -> None:
 
 def animate():
     global diffEt
-    et = glutGet(GLUT_ELAPSED_TIME) * .001
+    et = glutGet(GLUT_ELAPSED_TIME) * .0005
 
     for char in characters:
         char.animate((et - diffEt) * (not pause))
