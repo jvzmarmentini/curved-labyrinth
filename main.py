@@ -24,9 +24,9 @@ characters: List[Character] = []
 player: Character = Character(
     model=Polygon(
         filepath="assets/models/player.txt",
-        color=[1, 0, 1]
+        color=[1, 0, 0]
     ),
-    scale=Point(.25, .25, 1)
+    scale=Point(.15, .15, 1)
 )
 
 diffEt = 0
@@ -70,12 +70,11 @@ def initCharacters() -> None:
         characters.append(
             Character(
                 model=Polygon(
-                    filepath="assets/models/enemy.txt",
-                    color=[0, 1, 1]
+                    filepath="assets/models/enemy.txt"
                 ),
-                scale=Point(.25, .25, 1),
+                scale=Point(.15, .15, 1),
                 velocity=uniform(1.0, 2.0),
-                direction=getrandbits(1),
+                sense=getrandbits(1),
                 trail=choice(curves[1:]),
                 t=.5)
         )
@@ -125,9 +124,11 @@ def display() -> None:
     if pause:
         Drawer.displayTitle(f"Pause", sceneMax.x-.8, sceneMax.y-.3)
 
-    player.trail.color = 1, 0, 1
+    player.trail.color = .5, 1, .5
+    player.trail.width = 2
     if player.nextTrail is not None:
-        player.nextTrail[0].color = 1, 1, 0
+        player.nextTrail[0].color = .5, .5, 1
+        player.nextTrail[0].width = 4
 
     for curve in curves:
         curve.generate()
@@ -136,10 +137,10 @@ def display() -> None:
 
     for char in characters[1:]:
         char.display()
-        if char.trail == player.trail and player.collided(char):
+        if player.collided(char):
             pause = True
             Drawer.displayTitle(f"You lost ):", (sceneMax.x +
-                                sceneMin.x) / 2 - .55, sceneMax.y-.3)
+                                sceneMin.x) / 2 - .55, sceneMax.y - .3)
 
     glutSwapBuffers()
 

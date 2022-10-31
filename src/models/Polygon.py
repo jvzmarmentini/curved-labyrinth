@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import random
 from typing import List, Tuple
 
 from OpenGL.GL import *
@@ -13,12 +14,16 @@ from src.models.Point import Point
 class Polygon:
     vertices: List[Point] = field(default_factory=list)
     filepath: str = None
-    color: List[int] = field(default_factory=lambda: [1, 1, 1])
+    color: List[int] = None
 
     def __post_init__(self):
         if self.filepath is not None:
             self.extendFromFile()
+        if self.color is None:
+            self.color = list(map(lambda c: c / 255,
+                     random.sample(range(0, 255), 3)))
         self.bbox = BoundingBox(*self.getLimits(), [1 - c for c in self.color])
+        
 
     def __iter__(self):
         return iter(self.vertices)

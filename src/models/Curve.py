@@ -20,8 +20,10 @@ class Curve(Polygon):
     _steps = 15
     
     startNeighbours: Deque[Tuple[Self, int]] = field(default_factory=deque)
-    endNeighbours: Deque[Tuple[Self, int]] = field(default_factory=list)
+    endNeighbours: Deque[Tuple[Self, int]] = field(default_factory=deque)
+    
     color: List[int] = field(default_factory=lambda: [.5, .5, .5])
+    width: int = 2
     
     length: float = 0
     
@@ -42,17 +44,16 @@ class Curve(Polygon):
         if settings._debugger:
             Drawer.drawCoords(self.lerp(0))
             Drawer.drawCoords(self.lerp(1))
-        glLineWidth(2)
-        glBegin(GL_LINES)
+        
         totalLength = 0
         for t in np.linspace(.0, 1, num=self._steps):
             cur = self.lerp(t)
             if t != .0:
-                Drawer.drawLine(prev, cur, *self.color)
+                Drawer.drawLine(prev, cur, self.width, *self.color)
                 totalLength += Point.dist(cur, prev)
             prev = cur
         self.length = totalLength
-        glEnd()
+        
 
     def lerp(self, t: float) -> Point:
         controlPointA = self.vertices[0] * (1-t) + self.vertices[1] * t

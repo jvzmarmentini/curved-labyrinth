@@ -29,11 +29,14 @@ class Drawer():
             glutBitmapCharacter(GLUT_BITMAP_8_BY_13, ord(c))
 
     @staticmethod
-    def drawLine(p1: Point, p2: Point, *color):
+    def drawLine(p1: Point, p2: Point, width: int, *color):
+        glLineWidth(width)
+        glBegin(GL_LINES)
         if color is not None:
             glColor3f(*color)
         glVertex2f(p1.x, p1.y)
         glVertex2f(p2.x, p2.y)
+        glEnd()
 
     @staticmethod
     def drawCoords(p: Point, *color):

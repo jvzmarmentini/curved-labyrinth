@@ -28,7 +28,7 @@ class Point(typing.NamedTuple):
 
     def normalize(self) -> Self:
         if self.x == self.y == 0:
-            return Point()
+            return self
         d = sqrt(self.x ** 2 + self.y ** 2)
         return Point(self.x / d, self.y / d)
 
