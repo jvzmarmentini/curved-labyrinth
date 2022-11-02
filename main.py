@@ -137,7 +137,7 @@ def display() -> None:
 
     for char in characters[1:]:
         char.display()
-        if player.collided(char):
+        if player.trail == char.trail and player.collided(char):
             pause = True
             Drawer.displayTitle(f"You lost ):", (sceneMax.x +
                                 sceneMin.x) / 2 - .55, sceneMax.y - .3)
