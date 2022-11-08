@@ -23,8 +23,6 @@ Para iniciar o jogo, execute no terminal:
 python main.py
 ```
 
-![Inicialização](./init.png)
-
 A documentação completa está disponível no repositório no [GitHub](https://github.com/jvzmarmentini/curved-labyrinth).
 
 ### Debug
@@ -34,8 +32,6 @@ Para iniar o jogo no modo de *debug*, execute no terminal:
 ```bash
 python main.py --debug
 ```
-
-![Debug](./debug.png)
 
 ## Curvas
 
